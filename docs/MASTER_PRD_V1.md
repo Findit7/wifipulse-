@@ -34,6 +34,7 @@
 | 1.3 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 3 (Functional Requirements) |
 | 1.4 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 4 (UI/UX Design System) |
 | 1.5 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 5 (System Architecture) |
+| 1.6 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 6 (Database Design) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -915,8 +916,139 @@ The overall design principle is **"Clarity through Abstraction."** The underlyin
 ## 23. Router Integration Strategy
 > `[Placeholder: Explain how the application interfaces with and controls supported routers.]`
 
-## 24. Database Design
-> `[Placeholder: Outline the local (SQLite) and remote (Firebase) database schema structures.]`
+## 24. Database Design (Chapter 6)
+
+### 6.1 Database Overview
+WiFiPulse utilizes a **local-first architecture**. Network diagnostics and analytics must be available even when the external internet connection (WAN) goes down. Relying exclusively on cloud storage would render the app useless during outages—exactly when users need it most.
+
+- **SQLite (via Drift):** The primary relational database for complex queries, time-series usage analytics, and offline caching of device logs. Drift provides type-safe SQL and reactive streams.
+- **Hive:** Not used. We standardize on SQLite for all structural data to avoid fragmentation.
+- **SharedPreferences:** Used strictly for non-sensitive, primitive key-value pairs (e.g., Theme preference, First Launch flag).
+- **Secure Storage (FlutterSecureStorage):** Used for all sensitive credentials (OAuth tokens, Router Admin passwords).
+
+### 6.2 Entity Relationship Model
+
+```mermaid
+erDiagram
+    USERS ||--o{ ROUTER : manages
+    ROUTER ||--o{ WIFI_NETWORK : broadcasts
+    ROUTER ||--o{ CONNECTED_DEVICE : contains
+    CONNECTED_DEVICE ||--o{ USAGE_RECORD : generates
+    CONNECTED_DEVICE }|--|| DEVICE_VENDOR : belongs_to
+    ROUTER ||--o{ SPEED_TEST : executes
+    ROUTER ||--o{ SECURITY_AUDIT : undergoes
+    SECURITY_AUDIT ||--o{ THREAT_DETECTION : finds
+    USERS ||--o{ AI_INSIGHT : receives
+```
+
+### 6.3 Authentication Tables
+- **Users:** `user_id` (PK), `email`, `display_name`, `created_at`, `last_login`.
+- **Guest Sessions:** `session_id` (PK), `device_uuid`, `created_at`.
+- **Login History:** `log_id` (PK), `user_id` (FK), `ip_address`, `timestamp`, `status`.
+- **OAuth Accounts:** `oauth_id` (PK), `user_id` (FK), `provider` (Google/Apple), `provider_id`.
+- **Session Tokens:** `token_id` (PK), `user_id` (FK), `expires_at` (stored in secure storage, mapped here for auditing).
+
+### 6.4 Router Tables
+- **Router:** `router_id` (PK), `user_id` (FK), `mac_address`, `brand`, `model`, `firmware_version`.
+- **Router Configuration:** `config_id` (PK), `router_id` (FK), `ip_address`, `gateway`, `subnet_mask`.
+- **Router Credentials:** `cred_id` (PK), `router_id` (FK), `username`, `password_reference` (maps to Secure Storage).
+- **WiFi Networks:** `network_id` (PK), `router_id` (FK), `ssid`, `bssid`, `band` (2.4/5/6GHz), `channel`, `encryption_type`.
+- **Guest Networks:** `guest_net_id` (PK), `router_id` (FK), `ssid`, `is_active`, `time_limit`.
+
+### 6.5 Device Tables
+- **Connected Device:** `device_id` (PK), `mac_address` (Unique), `router_id` (FK), `current_ip`, `hostname`, `first_seen`, `last_seen`.
+- **Known Device:** `known_id` (PK), `device_id` (FK), `custom_name`, `icon_id`, `category`.
+- **Blocked Device:** `block_id` (PK), `device_id` (FK), `blocked_at`, `reason`.
+- **Trusted Device:** `trust_id` (PK), `device_id` (FK), `trusted_by_user_id` (FK).
+- **Device History:** `history_id` (PK), `device_id` (FK), `event_type` (connect/disconnect), `timestamp`.
+- **Device Vendor:** `oui` (PK), `vendor_name`, `country`.
+
+### 6.6 Usage Tables
+- **Usage Record:** `record_id` (PK), `device_id` (FK), `bytes_uploaded`, `bytes_downloaded`, `timestamp`.
+- **Hourly Usage:** `hourly_id` (PK), `router_id` (FK), `hour`, `total_up`, `total_down`.
+- **Daily Usage:** `daily_id` (PK), `router_id` (FK), `date`, `total_up`, `total_down`.
+- **Weekly Usage:** `weekly_id` (PK), `router_id` (FK), `week_start`, `total_up`, `total_down`.
+- **Monthly Usage:** `monthly_id` (PK), `router_id` (FK), `month`, `year`, `total_up`, `total_down`.
+- **Bandwidth Forecast:** `forecast_id` (PK), `router_id` (FK), `projected_usage`, `confidence_score`.
+
+### 6.7 Speed Test Tables
+- **Speed Test:** `test_id` (PK), `router_id` (FK), `timestamp`, `server_name`, `server_location`.
+- **Ping:** `test_id` (FK), `latency_ms`.
+- **Jitter:** `test_id` (FK), `jitter_ms`.
+- **Packet Loss:** `test_id` (FK), `loss_percentage`.
+- **Historical Results:** Materialized view of `Speed Test` aggregated by week for chart rendering.
+
+### 6.8 Security Tables
+- **Security Audit:** `audit_id` (PK), `router_id` (FK), `timestamp`, `overall_score`.
+- **Threat Detection:** `threat_id` (PK), `audit_id` (FK), `severity` (Low/Med/High), `description`.
+- **Unknown Devices:** Maps to `Connected Device` where `trust_id` is null.
+- **Alerts:** `alert_id` (PK), `threat_id` (FK), `is_dismissed`, `timestamp`.
+- **Security Score:** `score_id` (PK), `router_id` (FK), `score`, `calculated_at`.
+
+### 6.9 Notification Tables
+- **Notification:** `notification_id` (PK), `user_id` (FK), `title`, `body`, `type` (Security/Usage/System), `timestamp`.
+- **Read Status:** `notification_id` (PK/FK), `is_read`, `read_at`.
+- **Notification Settings:** `setting_id` (PK), `user_id` (FK), `push_enabled`, `email_enabled`, `critical_only`.
+- **Delivery Log:** `log_id` (PK), `notification_id` (FK), `delivery_status`, `timestamp`.
+
+### 6.10 AI Tables
+- **AI Insight:** `insight_id` (PK), `router_id` (FK), `category`, `summary_text`, `created_at`.
+- **AI Recommendation:** `recommendation_id` (PK), `insight_id` (FK), `actionable_step`, `is_applied`.
+- **AI Report:** `report_id` (PK), `router_id` (FK), `full_markdown`, `generated_at`.
+- **Prediction Cache:** `prediction_id` (PK), `metric` (e.g., congestion time), `predicted_value`, `expires_at`.
+
+### 6.11 Report Tables
+- **PDF Reports:** `pdf_id` (PK), `file_path`, `generated_at`, `size_bytes`.
+- **CSV Exports:** `csv_id` (PK), `file_path`, `generated_at`, `record_count`.
+- **Generated Reports:** `report_id` (PK), `type` (PDF/CSV), `trigger` (Manual/Auto).
+- **Sharing History:** `share_id` (PK), `report_id` (FK), `shared_via`, `timestamp`.
+
+### 6.12 Settings Tables
+*(Note: Often mapped via Key-Value store rather than strict relational tables, but modeled here for completeness if synced)*
+- **Theme:** `light`, `dark`, `system`.
+- **Language:** Locale strings (e.g., `en_US`).
+- **Units:** `mbps`, `MB/s`.
+- **Preferences:** `auto_scan_enabled`, `analytics_opt_in`.
+- **Permissions:** Record of when user granted Location/Network access.
+
+### 6.13 Cache Tables
+- **API Cache:** `request_hash` (PK), `response_body`, `expires_at`.
+- **Router Cache:** Brand-specific API responses that don't change frequently (e.g., supported features).
+- **Device Cache:** Temporary holding table for devices detected during an active scan before merging into `Connected Device`.
+- **Analytics Cache:** Un-synced events waiting for cloud upload.
+
+### 6.14 Indexing Strategy
+- **Primary Keys:** Standard auto-incrementing integers or UUIDs depending on sync requirements.
+- **Indexes:** Applied heavily to `mac_address`, `timestamp`, and `router_id` to speed up chart rendering.
+- **Foreign Keys:** Enforced to prevent orphaned records (e.g., deleting a router deletes its devices via `CASCADE`).
+- **Composite Keys:** Used in junction tables (e.g., `Read Status`).
+- **Performance Considerations:** Time-series data (`Usage Record`) must be aggressively indexed by time and device to prevent UI thread lock during aggregation.
+
+### 6.15 Data Lifecycle
+- **Creation:** Records created locally; queued for sync if cloud enabled.
+- **Updates:** Last-write-wins policy based on `updated_at` timestamps.
+- **Deletion:** Soft deletes (`is_deleted = true`) used for syncable records to propagate deletions.
+- **Archival:** Raw `Usage Record` rows older than 30 days are rolled up into `Daily Usage` and the raw rows are purged.
+- **Cache Expiration:** API caches cleared based on strict TTL (Time To Live).
+- **Sync Strategy:** Background worker fires when connected to WAN to push SQLite changes to remote database.
+
+### 6.16 Encryption
+- **Sensitive Fields:** Router Passwords, OAuth Tokens, API Keys.
+- **Router Password:** Never stored in SQLite. Saved in `FlutterSecureStorage` linked by a reference ID.
+- **Authentication Token:** Handled entirely by Firebase Auth SDK/Secure Storage.
+- **User Credentials:** Passwords never handled directly (OAuth only).
+- **Secure Storage Rules:** Key-value pairs using hardware-backed Keystore (Android) / Keychain (iOS).
+
+### 6.17 Backup & Recovery
+- **Backup Strategy:** User can trigger a manual SQLite export to JSON/Zip. Cloud users have automatic daily sync.
+- **Restore Strategy:** Wipes current SQLite instance and repopulates from decrypted backup payload.
+- **Migration Rules:** Strict version control using Drift's schema migration utilities. `CREATE TABLE IF NOT EXISTS` and `ALTER TABLE` rigorously tested.
+- **Versioning:** Schema version incremented manually in Dart code on every table alteration.
+
+### 6.18 Database Standards
+- **Naming Conventions:** `snake_case` for all table and column names.
+- **Constraints:** `NOT NULL` used wherever possible. Foreign keys explicitly declared.
+- **Validation Rules:** Validated at the Domain layer before insertion (e.g., MAC address regex validation).
 
 ## 25. API Design
 > `[Placeholder: Describe external API endpoints, internal service contracts, and data structures.]`
