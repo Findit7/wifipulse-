@@ -33,6 +33,7 @@
 | 1.2 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 2 (Product Strategy) |
 | 1.3 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 3 (Functional Requirements) |
 | 1.4 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 4 (UI/UX Design System) |
+| 1.5 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 5 (System Architecture) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -544,8 +545,181 @@ While competitors like Fing offer raw network mapping and Net Analyzer offers te
 ## 18. Feature Modules
 > `[Placeholder: Break down the application into discrete functional modules.]`
 
-## 19. Technical Architecture
-> `[Placeholder: Describe the system architecture, frameworks (Flutter, Riverpod), and infrastructure.]`
+## 19. System Architecture (Chapter 5)
+
+### 5.1 High-Level Architecture
+WiFiPulse is built using a strict separation of concerns, ensuring that UI components are completely decoupled from network logic and business rules.
+
+The application leverages **Flutter** for cross-platform UI rendering, **Riverpod** for reactive state management, and **Clean Architecture** combined with the **Repository Pattern** for data flow. 
+
+```mermaid
+graph TD
+    A[Flutter UI Layer] -->|Reads State/Dispatches Actions| B(Riverpod Providers)
+    B -->|Calls| C{Use Cases / Controllers}
+    C -->|Requests Data| D[Repositories]
+    D -->|Interfaces via| E(Service Layer)
+    E --> F[Router Communication Layer]
+    E --> G[AI Engine API]
+    E --> H[Analytics Engine]
+    E --> I[(Local Database / SQLite)]
+```
+
+Key Engines:
+- **Router Communication Layer:** Handles specific API calls to various router brands.
+- **AI Engine:** Processes historical data to generate plain-text insights.
+- **Analytics Engine:** Aggregates bandwidth and usage data.
+- **Notification Engine:** Dispatches critical alerts.
+- **Export Engine:** Formats data into PDF/CSV reports.
+
+### 5.2 Folder Structure
+The project structure strictly adheres to feature-based organization combined with Clean Architecture layers.
+
+```text
+lib/
+├── core/             # App-wide constants, themes, error handling, extensions
+├── shared/           # Reusable UI widgets (buttons, cards) used across features
+├── features/         # Feature modules containing Presentation, Domain, Data
+│   ├── auth/         # Login, Register, Session Management
+│   ├── dashboard/    # Main landing screen and telemetry summary
+│   ├── devices/      # Device list and detailed device views
+│   ├── discovery/    # Network scanning and ARP sweeping logic
+│   ├── router/       # Router admin panel interfacing
+│   ├── usage/        # Bandwidth monitoring and historical charts
+│   ├── security/     # Port scanning, password auditing
+│   ├── speed_test/   # External speed testing logic
+│   ├── ai/           # LLM integration and insight generation
+│   ├── notifications/# Alert center and push handling
+│   ├── reports/      # PDF/CSV generation UI and logic
+│   ├── settings/     # App configuration and preferences
+│   └── sync/         # Cloud backup and restore logic
+```
+
+### 5.3 Clean Architecture
+Every feature inside `lib/features/` follows this structure:
+
+- **Presentation Layer (`presentation/`):** Contains Flutter Widgets, Pages, and Riverpod Notifiers. Knows *nothing* about how data is fetched.
+- **Domain Layer (`domain/`):** Contains Entities (pure Dart objects), Repositories (Interfaces/Abstract classes), and Use Cases. The core business logic.
+- **Data Layer (`data/`):** Contains Models (JSON serializable), Data Sources (Remote APIs, Local SQLite), and Repository Implementations.
+
+**Communication Rules:**
+- The Presentation layer can only depend on Domain.
+- The Data layer can only depend on Domain.
+- The Domain layer depends on *nothing* (Core Dart only).
+
+### 5.4 State Management
+WiFiPulse utilizes **Riverpod (2.x)** for all state management and dependency injection.
+
+- **Provider Hierarchy:** Strict scoping. Global providers for services; auto-disposed providers for transient screen states.
+- **Repository Providers:** Provide concrete implementations of domain interfaces.
+- **Service Providers:** Singleton instances of external services (e.g., `routerServiceProvider`).
+- **Notifier Providers (`Notifier<T>` / `AsyncNotifier<T>`):** Used for complex state mutations (e.g., `DeviceListNotifier`).
+- **Future Providers:** Used for one-off asynchronous data fetching (e.g., `fetchDeviceDetailsProvider`).
+- **Stream Providers:** Used for real-time telemetry (e.g., `liveSpeedProvider`).
+- **Caching:** Handled automatically via Riverpod's `keepAlive` mechanics, with strict invalidation rules upon router disconnection.
+- **Error Handling:** UI always maps `AsyncValue.error` to user-friendly widgets (Error States), preventing white screens of death.
+
+### 5.5 Dependency Injection
+- **Strategy:** Riverpod is the sole DI container. We do not use GetIt.
+- **Lifecycle:** Services and Repositories are typically Global Providers (living for the duration of the app). State controllers are `autoDispose`.
+- **Singletons:** Enforced by creating a standard `Provider` (e.g., `final dbProvider = Provider<Database>((ref) => ...)`).
+- **Lazy Loading:** Riverpod inherently lazy-loads all dependencies upon first read.
+- **Initialization Sequence:** Critical services (SharedPreferences, SQLite) are initialized in `main.dart` before `runApp`, and their instances are passed into `ProviderScope` via `overrides`.
+
+### 5.6 Repository Pattern
+Repositories act as the single source of truth for a domain.
+- **Authentication:** `AuthRepository` (Firebase + Secure Storage).
+- **Devices:** `DeviceRepository` (SQLite cache + live ARP scans).
+- **Router:** `RouterRepository` (Brand-specific API implementations).
+- **Analytics:** `AnalyticsRepository` (Aggregates raw usage data).
+- **Usage:** `UsageRepository` (Handles time-series bandwidth data).
+- **Security:** `SecurityRepository` (Manages audit histories and CVE checks).
+- **Reports:** `ReportsRepository` (Manages saved files).
+- **Notifications:** `NotificationRepository` (FCM tokens and local alert history).
+- **AI:** `AIRepository` (Prompts and cached insights).
+- **Settings:** `SettingsRepository` (Theme, units, preferences).
+
+### 5.7 Service Layer
+Services handle external I/O and hardware interaction, consumed by the Data Layer.
+- **Router Service:** Adapters for TP-Link, Asus, Netgear APIs.
+- **Speed Test Service:** Connects to M-Lab/Ookla infrastructure.
+- **AI Service:** Communicates with remote LLM or local ML model.
+- **Analytics Service:** Formats telemetry for backend processing.
+- **Export Service:** Generates physical PDF/CSV files on device storage.
+- **Notification Service:** Handles local OS notification channels.
+- **Security Service:** Executes raw socket connections for port scanning.
+- **Permission Service:** Manages OS-level permission requests and rationales.
+- **Connectivity Service:** Monitors WAN/LAN network state changes.
+
+### 5.8 Error Handling
+- **Centralized Exception Handling:** All repository calls are wrapped in a generic `Result<T, Exception>` or mapped to UI-friendly `Failure` objects.
+- **Custom Exceptions:** `NetworkFailure`, `AuthFailure`, `RouterAuthFailure`, `PermissionDeniedFailure`.
+- **API Exceptions:** Handled at the Data Source level and transformed into Domain exceptions.
+- **Router Exceptions:** Specific timeouts for slow router responses.
+- **Offline Exceptions:** Trigger the Offline Strategy fallback gracefully.
+- **Retry Policy:** Exponential backoff for non-destructive read operations (e.g., fetching usage logs).
+
+### 5.9 Logging
+- **Debug Logging:** Uses `logger` package with colored console output (Trace, Debug, Info, Warning, Error).
+- **Production Logging:** Errors and exceptions are routed to Firebase Crashlytics.
+- **Crash Reporting:** Non-fatal exceptions caught by Flutter's global error handler are logged.
+- **Analytics Logging:** Screen views and critical flows (e.g., "Scan Completed") are sent to Firebase Analytics.
+- **Privacy Rules:** MAC addresses, IP addresses, and SSIDs are **NEVER** logged to external crash reporters or analytics. They are strictly PII.
+
+### 5.10 Performance
+- **Lazy Loading:** Pagination for device history and security logs.
+- **Caching:** Aggressive local caching of device vendors (OUI) to prevent repetitive API calls.
+- **Memory Optimization:** Stream subscriptions are strictly cancelled on disposal to prevent memory leaks during continuous network monitoring.
+- **Image Optimization:** SVG used for all vector icons; WebP for any raster graphics.
+- **Network Optimization:** Batching analytics payloads to reduce radio wakeups.
+- **Background Processing:** Heavy tasks (Network Scans, PDF Generation) use Dart `Isolates` to prevent main thread jank.
+
+### 5.11 Offline Strategy
+- **Local Database:** SQLite (via drift or sqflite) serves as the offline cache for historical data.
+- **Cache Synchronization:** Read operations default to cache first, network second, unless explicitly refreshed.
+- **Conflict Resolution:** Last-write-wins policy for device nicknames and settings.
+- **Queue Management:** Offline actions (e.g., "Rename Device") are queued locally and executed when the router connection is restored.
+
+### 5.12 Security Architecture
+- **Authentication:** OAuth 2.0 via Firebase; no local password hashing required.
+- **Secure Storage:** Sensitive data (Router Admin Passwords, API keys) are stored in `FlutterSecureStorage` (Keystore/Keychain).
+- **Encrypted Preferences:** User settings are stored safely.
+- **Certificate Pinning:** Implemented for all communication with our proprietary backend servers.
+- **Router Credentials:** Stored strictly locally, never synced to the cloud.
+- **Sensitive Data Handling:** RAM is cleared of passwords immediately after use. 
+
+### 5.13 Scalability
+- **Future Modules:** Clean Architecture allows adding an "IoT Management" module without touching "Speed Test".
+- **Plugin System:** Router APIs are implemented as interfaces, allowing rapid addition of new router brand support.
+- **Feature Flags:** Remote Config allows toggling experimental AI features on/off without app updates.
+- **Enterprise Version:** Modular data sources allow swapping Firebase for an enterprise-hosted backend.
+- **Multi-Router Support:** Repositories are designed to accept a `routerId`, paving the way for managing multiple homes.
+- **Cloud Sync:** Abstracted repositories make it trivial to mirror SQLite data to Firestore in future updates.
+
+### 5.14 Risks
+- **Architecture Risks:** Over-engineering standard features leading to slow development velocity.
+- **Mitigation Strategy:** Strict PR reviews enforcing pragmatism over theoretical perfection.
+- **Technical Debt:** Skipping the Domain layer to save time during MVP development.
+- **Maintainability:** High, provided the Riverpod provider graph remains documented and cyclomatic complexity is kept low.
+
+---
+
+### Architecture Principles
+1. UI is dumb; it only reacts to state.
+2. The Database is the single source of truth for offline data.
+3. Errors are data, not crashes.
+4. Privacy is default; PII never leaves the device unless explicitly synced by the user.
+
+### Development Standards
+- 100% adherence to `flutter lint`.
+- All asynchronous methods must handle timeouts explicitly.
+
+### Coding Standards
+- Use `freezed` for immutable models and union types.
+- Avoid `dynamic`; use strict typing.
+
+### Folder Ownership
+- **Tech Lead:** Controls `core/` and `domain/`.
+- **Feature Teams:** Own specific `features/` modules.
 
 ## 20. UI/UX Design System (Chapter 4)
 
