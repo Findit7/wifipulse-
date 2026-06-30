@@ -31,7 +31,9 @@
 | 1.0 | 2026-06-30 | AI Assistant | Initial PRD Template Creation |
 | 1.1 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 1 (Sections 1-7) |
 | 1.2 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 2 (Product Strategy) |
-| 1.3 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 3 (Functional Requirements) |## Approvals
+| 1.3 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 3 (Functional Requirements) |
+| 1.4 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 4 (UI/UX Design System) |
+## Approvals
 
 | Name | Role | Date | Signature |
 |------|------|------|-----------|
@@ -545,8 +547,190 @@ While competitors like Fing offer raw network mapping and Net Analyzer offers te
 ## 19. Technical Architecture
 > `[Placeholder: Describe the system architecture, frameworks (Flutter, Riverpod), and infrastructure.]`
 
-## 20. UI Design Principles
-> `[Placeholder: Define the visual language, design system, and Material 3 adherence guidelines.]`
+## 20. UI/UX Design System (Chapter 4)
+
+### 4.1 Design Philosophy
+WiFiPulse is defined by the following core attributes:
+- **Modern:** Utilizing the latest Android UI paradigms.
+- **Premium:** Feeling like a high-end, paid application even in its free tier.
+- **Fast:** Instantaneous UI responses with zero perceived lag.
+- **Clean:** High signal-to-noise ratio; removing unnecessary clutter.
+- **AI-first:** Putting intelligent insights front and center, rather than burying them in logs.
+- **Material 3 Inspired:** Embracing dynamic colors, rounded corners, and expressive typography while maintaining a distinct brand identity.
+- **Minimal:** Stripping away complex networking jargon in favor of clear, actionable data.
+- **Professional:** Establishing trust through precise, consistent, and error-free design.
+- **Network Intelligence Platform:** Designed not just as a tool, but as a proactive command center.
+
+The overall design principle is **"Clarity through Abstraction."** The underlying network data is infinitely complex, but the UI must abstract that complexity into a binary state for the user: "Everything is fine" or "Here is what you need to fix."
+
+### 4.2 Design Language
+- **Minimalism:** Use whitespace aggressively to separate logical groups of information.
+- **Spacious Layouts:** Avoid dense grids; favor single-column scrolling lists on mobile.
+- **Rounded Components:** All cards, buttons, and dialogs use a standard `16dp` border radius to feel friendly and modern.
+- **Floating Cards:** Core interactive elements sit on elevated surfaces.
+- **Soft Shadows:** Use large spread, low opacity drop shadows (`0.05` to `0.1`) to create subtle depth without harsh contrast.
+- **Glass Effects:** Use subtle blur (`BackdropFilter`) behind bottom navigation bars and floating action buttons for a premium feel.
+- **Motion Philosophy:** Every interaction has a reaction. State changes should be animated, not instant.
+- **Consistency Rules:** A button that performs a destructive action must *always* look the same, regardless of the screen.
+
+### 4.3 Color System
+*The application utilizes a custom dark-mode optimized palette with high-contrast neon accents.*
+
+| Role | Color Name | Hex (Light) | Hex (Dark) |
+|------|------------|-------------|------------|
+| **Primary** | Pulse Blue | `#2962FF` | `#448AFF` |
+| **Secondary** | Deep Purple | `#6200EA` | `#B388FF` |
+| **Accent** | Neon Cyan | `#00E5FF` | `#18FFFF` |
+| **Success** | Emerald | `#00C853` | `#69F0AE` |
+| **Warning** | Amber | `#FFAB00` | `#FFD740` |
+| **Danger** | Crimson | `#D50000` | `#FF5252` |
+| **Info** | Sky Blue | `#0091EA` | `#40C4FF` |
+| **Background** | Pure / Void | `#F8F9FA` | `#0A0A0A` |
+| **Surface** | Card / Panel | `#FFFFFF` | `#1A1A1A` |
+
+- **Text Colors:** Primary (`#121212` / `#FFFFFF`), Secondary (`#5F6368` / `#BDBDBD`), Tertiary (`#9E9E9E` / `#757575`).
+- **Disabled Colors:** Background (`#E0E0E0` / `#333333`), Text (`#9E9E9E` / `#666666`).
+- **Border Colors:** Subtle Outline (`#E0E0E0` / `#2C2C2C`).
+- **Status Colors:** 
+  - *Router Status:* Online (Emerald), Offline (Crimson), Warning (Amber).
+  - *Internet Status:* Connected (Emerald), Dropping (Amber), Disconnected (Crimson).
+  - *Security Status:* Secure (Emerald), Vulnerable (Crimson), Auditing (Info).
+  - *AI Insight Colors:* Recommendations (Deep Purple), Anomalies (Amber).
+
+### 4.4 Typography
+- **Fonts:** **Inter** (Primary for all UI elements, prioritizing legibility) and **JetBrains Mono** (for raw data, IP addresses, and MAC addresses).
+- **Heading Hierarchy:**
+  - H1 (Screen Titles): `32sp`, Bold, `-1.0` letter spacing.
+  - H2 (Section Headers): `24sp`, SemiBold, `-0.5` letter spacing.
+  - H3 (Card Titles): `18sp`, Medium.
+- **Body Hierarchy:**
+  - Body 1 (Main Text): `16sp`, Regular, `1.5` line height.
+  - Body 2 (Secondary Text): `14sp`, Regular, `1.4` line height.
+- **Caption:** `12sp`, Medium (used for timestamps and small badges).
+- **Button:** `14sp`, SemiBold, All Caps or Title Case (depending on platform norms).
+- **Labels:** `12sp`, Bold, `1.0` letter spacing (used for overline labels).
+- **Number Styles:** 
+  - Dashboard Numbers (Speed Test results): `48sp`, Bold, JetBrains Mono.
+- **Spacing Rules:** `8dp` minimum baseline grid for all typography elements.
+
+### 4.5 Iconography
+- **Icon Family:** **Material Symbols Rounded** (filled for active states, outlined for inactive).
+- **Usage Rules:** Icons must always be accompanied by text labels unless universally understood (e.g., search magnifying glass).
+- **Router Icons:** `router`, `wifi`, `wifi_tethering`.
+- **Device Icons:** `smartphone`, `laptop_mac`, `tv`, `dns` (servers), `nest_cam_indoor`.
+- **Security Icons:** `shield`, `gpp_good`, `gpp_bad`, `lock`, `vpn_key`.
+- **Analytics Icons:** `monitoring`, `bar_chart`, `timeline`, `pie_chart`.
+- **Notification Icons:** `notifications`, `notifications_active`, `warning`.
+- **AI Icons:** `auto_awesome`, `smart_toy`, `psychology`.
+
+### 4.6 Layout System
+- **Grid:** 4-column grid on mobile, 8-column on tablets. `16dp` outer margins.
+- **Margins:** `16dp` horizontal standard for all screens. `24dp` bottom padding above navigation bars.
+- **Spacing:** `8dp` intra-component spacing, `16dp` inter-component spacing, `32dp` major section spacing.
+- **Cards:** Full width minus `16dp` margins, `16dp` internal padding, `16dp` border radius.
+- **Lists:** Edge-to-edge separators, `16dp` horizontal padding for list items, minimum `56dp` touch target height.
+- **Bottom Sheets:** Modal sheets for complex interactions (e.g., Device Details). Rounded top corners (`24dp`).
+- **Dialogs:** Used only for destructive actions or critical alerts.
+- **Navigation:** Standard bottom navigation bar (`80dp` height) for top-level destinations.
+- **Floating Action Buttons (FAB):** Used selectively for primary actions (e.g., "Run Scan" on Dashboard). Positioned at the bottom end.
+
+### 4.7 Navigation System
+- **Bottom Navigation:** Fixed to the bottom. Destinations: Dashboard, Devices, Security, Analytics.
+- **Drawer:** Not used. All critical navigation is via Bottom Navigation or Profile icon in the App Bar.
+- **Tabs:** Used for sub-navigation within a top-level destination (e.g., Security -> [Audit, Timeline]).
+- **Nested Navigation:** Managed via GoRouter, maintaining state for each Bottom Nav tab.
+- **Deep Linking:** Supported for all major screens (e.g., `wifipulse://devices/{mac_address}`).
+- **Back Navigation:** Standard OS back button/gesture behavior. State is preserved when navigating back.
+
+### 4.8 Animation System
+- **Page Transitions:** Shared Axis (X-axis) for sibling screens, Fade Through for Bottom Nav changes, Container Transform for Card-to-Details.
+- **Loading Animations:** Custom Lottie animations (pulsing WiFi wave) instead of generic spinners.
+- **Device Scan Animation:** Radar-sweep overlay on a network map.
+- **Speed Test Animation:** Real-time speedometer gauge with particle effects for data packets.
+- **Dashboard Refresh Animation:** Liquid pull-to-refresh.
+- **AI Processing Animation:** Shimmering gradient on the AI Insight card while generating text.
+- **Success Animation:** Checkmark burst.
+- **Error Animation:** Subtle horizontal shake.
+
+### 4.9 Screen Catalog
+1. **Splash:** Animated logo, brand loading.
+2. **Onboarding:** 3-step carousel explaining features and requesting permissions.
+3. **Authentication:** Login/Register gateway.
+4. **Dashboard:** Main telemetry hub.
+5. **Device List:** All discovered devices.
+6. **Device Details:** Specific metrics and actions for a single MAC address.
+7. **Router Details:** IP, Gateway, DNS, and remote management actions.
+8. **Analytics:** Charts and historical data.
+9. **Reports:** Export configuration and generated PDF list.
+10. **Security:** Vulnerability score and open ports.
+11. **AI Insights:** Chat-like interface for AI recommendations.
+12. **Notifications:** Inbox for all system alerts.
+13. **Speed Test:** Dedicated test UI.
+14. **Settings:** App configuration, theme, and data management.
+15. **Profile:** User account details and cloud sync status.
+16. **Help:** FAQs and support contact.
+17. **About:** Version info, licenses.
+18. **Permissions:** Dedicated screen explaining *why* location/network permissions are needed before prompting the OS dialog.
+
+### 4.10 Responsive Design
+- **Small Phones (SE/Mini):** Stacked UI elements, slightly reduced typography scales.
+- **Large Phones (Pro Max/Ultra):** Standard `16dp` margins, highly comfortable touch targets.
+- **Foldables (Inner Screen):** 2-pane layout (List on left, Details on right).
+- **Tablets (Landscape):** Persistent left-side navigation rail instead of Bottom Navigation. 3-pane layout for complex tasks.
+- **Tablets (Portrait):** Similar to large phones but with multi-column grid utilization for cards.
+
+### 4.11 Accessibility
+- **Contrast:** All text and critical UI elements must pass WCAG 2.1 AA contrast ratios (4.5:1 for normal text).
+- **Dynamic Text:** UI must scale gracefully up to 200% OS font size without breaking layouts.
+- **Screen Reader:** All non-text interactive elements must have descriptive `Semantics` labels (e.g., `contentDescription`).
+- **Color Blindness:** Never rely solely on color to convey state (e.g., a "Disconnected" state must have an icon/text, not just turn red).
+- **Touch Targets:** Minimum `48x48dp` for all clickable elements.
+- **Keyboard Navigation:** Support D-pad and Tab navigation for Android TV/Chromebook compatibility.
+- **Accessibility Score Target:** 100% on Google Accessibility Scanner.
+
+### 4.12 Empty States
+- **Loading:** Skeleton screens mimicking the final layout shape.
+- **No Internet:** "Offline Mode" graphic, showing cached data with a prominent "Reconnect" button.
+- **No Devices:** "Scan your network" prompt with an illustration of a router.
+- **No Router:** "Connect to WiFi" prompt if on cellular data.
+- **No Reports:** "Generate your first report" call to action.
+- **No Notifications:** "All clear!" illustration.
+
+### 4.13 Error States
+- **Network Failure:** Snackbars for transient errors; full-screen error states for critical data load failures.
+- **Authentication Error:** Inline text field errors with specific reasons (e.g., "Password too short").
+- **Router Unavailable:** "Cannot reach router admin panel" with troubleshooting steps (e.g., "Are you on the guest network?").
+- **Permission Denied:** "We need location access to see your WiFi name" with a button linking to OS settings.
+- **Speed Test Failed:** "Server unreachable, try again."
+- **Unknown Error:** "Something went wrong" with an option to send a crash report.
+
+### 4.14 Component Library
+- **Buttons:** Primary (Filled, Pulse Blue), Secondary (Outlined), Text (For cancel actions).
+- **Cards:** Elevated `2dp`, `16dp` radius, pure white/dark gray background.
+- **Charts:** Line charts with gradient fills, Bar charts with rounded caps.
+- **Progress Indicators:** Linear (at top of screen for global loading), Circular (for localized loading).
+- **Badges:** Small colored dots on icons for unread notifications.
+- **Avatars:** Circular placeholders for device manufacturer logos.
+- **Search:** Sticky search bar with leading magnifying glass and trailing clear button.
+- **Filter Chips:** Pill-shaped toggles for filtering device lists (e.g., "Online", "Unknown").
+- **Dialogs:** Material 3 standard `28dp` radius.
+- **Snackbars:** Floating at the bottom, `8dp` radius, dark background.
+- **Bottom Sheets:** Used for all contextual menus instead of dropdowns.
+- **Tables:** Used rarely, only for deep analytics exports.
+- **Device Cards:** Horizontal layout: Avatar (Left), Name/IP (Center), Status Indicator (Right).
+- **Usage Cards:** Vertical layout: Metric (Top), Sparkline chart (Bottom).
+- **AI Cards:** Distinctive deep purple gradient background to differentiate from standard data.
+- **Security Cards:** Collapsible sections detailing passed/failed audits.
+
+---
+### Complete UI Component Inventory
+> `[Placeholder: Link to external Figma or internal asset library]`
+
+### Design Tokens
+> `[Placeholder: Link to JSON export of color/typography tokens for automated CI/CD synchronization]`
+
+### Future UI Improvements
+> `[Placeholder: Plans for dynamic themes based on router brand, AR network mapping, widget expansion]`
 
 ## 21. Security Requirements
 > `[Placeholder: Detail encryption, authentication, authorization, and data protection rules (REQ-S-###).]`
