@@ -30,7 +30,7 @@
 |---------|------|--------|------------------------|
 | 1.0 | 2026-06-30 | AI Assistant | Initial PRD Template Creation |
 | 1.1 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 1 (Sections 1-7) |
-
+| 1.2 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 2 (Product Strategy) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -81,29 +81,31 @@ Features are numbered hierarchically corresponding to their module (e.g., `Modul
 9. [User Personas](#9-user-personas)
 10. [Market Research](#10-market-research)
 11. [Competitive Analysis](#11-competitive-analysis)
-12. [Feature Roadmap](#12-feature-roadmap)
-13. [Functional Requirements](#13-functional-requirements)
-14. [Non Functional Requirements](#14-non-functional-requirements)
-15. [Information Architecture](#15-information-architecture)
-16. [Feature Modules](#16-feature-modules)
-17. [Technical Architecture](#17-technical-architecture)
-18. [UI Design Principles](#18-ui-design-principles)
-19. [Security Requirements](#19-security-requirements)
-20. [AI Features](#20-ai-features)
-21. [Router Integration Strategy](#21-router-integration-strategy)
-22. [Database Design](#22-database-design)
-23. [API Design](#23-api-design)
-24. [Performance Requirements](#24-performance-requirements)
-25. [Testing Strategy](#25-testing-strategy)
-26. [Analytics](#26-analytics)
-27. [Accessibility](#27-accessibility)
-28. [Monetization Strategy](#28-monetization-strategy)
-29. [Release Plan](#29-release-plan)
-30. [Future Roadmap](#30-future-roadmap)
-31. [Risks](#31-risks)
-32. [Assumptions](#32-assumptions)
-33. [Open Questions](#33-open-questions)
-34. [Glossary](#34-glossary)
+12. [Product Positioning](#12-product-positioning)
+13. [SWOT Analysis](#13-swot-analysis)
+14. [Feature Roadmap](#14-feature-roadmap)
+15. [Functional Requirements](#15-functional-requirements)
+16. [Non Functional Requirements](#16-non-functional-requirements)
+17. [Information Architecture](#17-information-architecture)
+18. [Feature Modules](#18-feature-modules)
+19. [Technical Architecture](#19-technical-architecture)
+20. [UI Design Principles](#20-ui-design-principles)
+21. [Security Requirements](#21-security-requirements)
+22. [AI Features](#22-ai-features)
+23. [Router Integration Strategy](#23-router-integration-strategy)
+24. [Database Design](#24-database-design)
+25. [API Design](#25-api-design)
+26. [Performance Requirements](#26-performance-requirements)
+27. [Testing Strategy](#27-testing-strategy)
+28. [Analytics](#28-analytics)
+29. [Accessibility](#29-accessibility)
+30. [Monetization Strategy](#30-monetization-strategy)
+31. [Release Plan](#31-release-plan)
+32. [Future Roadmap](#32-future-roadmap)
+33. [Risks](#33-risks)
+34. [Assumptions](#34-assumptions)
+35. [Open Questions](#35-open-questions)
+36. [Glossary](#36-glossary)
 
 ---
 
@@ -146,82 +148,180 @@ The platform offers real-time dashboards for speed, usage, and device tracking, 
 - **NG-3:** We will not provide enterprise-grade B2B network management features (e.g., multi-site SDN management).
 
 ## 8. Target Audience
-> `[Placeholder: Define the primary and secondary demographic targets.]`
+### Primary Users
+Everyday smartphone users who experience home network issues (buffering, dead zones) but lack the technical expertise to diagnose them using traditional router interfaces.
+
+### Secondary Users
+Parents and household managers needing visibility into network usage, connected devices, and basic parental controls to manage screen time and ensure digital safety.
+
+### Enterprise Users
+Remote workers and small office administrators who require enterprise-grade reliability, security monitoring, and uptime guarantees for critical professional communications.
+
+### Geographic Scope
+Global release, with initial localization in English. The application is designed to be hardware-agnostic, supporting standard ISP-provided routers globally.
 
 ## 9. User Personas
-> `[Placeholder: Describe 2-3 key user personas with their behaviors, needs, and pain points.]`
+
+### 1. The Student
+- **Background:** College student sharing an apartment with multiple roommates.
+- **Goals:** Ensure stable connection for online classes and streaming.
+- **Pain Points:** Frequent bandwidth throttling when roommates download large files; unable to access router admin panels.
+- **Technical Skill:** Moderate to High.
+- **WiFi Usage Pattern:** High streaming, gaming, and video conferencing.
+- **Key Features Needed:** Device discovery, bandwidth hogs identification, speed test.
+
+### 2. The Family/Home User
+- **Background:** Parent managing a household with 10+ smart devices (phones, TVs, tablets).
+- **Goals:** Keep the family safe online and manage screen time.
+- **Pain Points:** Overwhelmed by technical jargon; worried about strangers accessing the network.
+- **Technical Skill:** Low.
+- **WiFi Usage Pattern:** General browsing, streaming, smart home automation.
+- **Key Features Needed:** One-tap security audit, unknown device alerts, intuitive usage dashboards.
+
+### 3. The Gamer
+- **Background:** Competitive online gamer heavily reliant on low latency.
+- **Goals:** Absolute minimum ping and zero packet loss.
+- **Pain Points:** Intermittent lag spikes ruining competitive matches; lack of QoS (Quality of Service) controls.
+- **Technical Skill:** High.
+- **WiFi Usage Pattern:** Continuous low-latency data streams.
+- **Key Features Needed:** Real-time latency tracking, AI-driven bottleneck diagnosis, offline support.
+
+### 4. The Remote Worker
+- **Background:** Professional working from home full-time, relying on VPNs and Zoom.
+- **Goals:** 99.9% uptime during business hours; secure connection to corporate networks.
+- **Pain Points:** Unpredictable dropouts during critical meetings; security compliance requirements.
+- **Technical Skill:** Moderate.
+- **WiFi Usage Pattern:** Heavy upload/download, constant video conferencing.
+- **Key Features Needed:** Security monitoring, usage analytics, network stability scoring.
+
+### 5. The Small Office
+- **Background:** Manager of a small business or co-working space.
+- **Goals:** Provide reliable guest Wi-Fi while keeping internal assets secure.
+- **Pain Points:** Managing multiple access points; identifying rogue devices.
+- **Technical Skill:** Moderate.
+- **WiFi Usage Pattern:** High concurrent connections.
+- **Key Features Needed:** Multi-router management, detailed usage analytics, AI insights.
+
+### 6. The Network Enthusiast
+- **Background:** Tech hobbyist running custom router firmware and smart home labs.
+- **Goals:** Maximum visibility into packet routing, signal strength, and channel interference.
+- **Pain Points:** Consumer apps abstract too much data, offering no real diagnostic value.
+- **Technical Skill:** Expert.
+- **WiFi Usage Pattern:** Extreme (IoT networks, NAS servers, homelabs).
+- **Key Features Needed:** Advanced router management, deep AI insights, raw diagnostic data export.
 
 ## 10. Market Research
-> `[Placeholder: Summarize key market trends supporting the product.]`
+The home WiFi landscape is undergoing a massive transformation driven by the exponential growth of connected devices.
+- **Growth of Home WiFi:** The transition to remote work and 4K/8K streaming has made robust home WiFi a utility as essential as electricity.
+- **Connected Device Trends:** The average household now manages upwards of 15-20 connected devices, creating complex, multi-layered network environments that are highly susceptible to interference and bandwidth starvation.
+- **Smart Home Adoption:** As IoT adoption accelerates, the attack surface for home networks expands. Users are increasingly aware of vulnerabilities but lack the tools to audit their smart home ecosystem.
+- **Need for Network Visibility:** Traditional ISP routers provide "black box" experiences. When internet fails, users instinctively blame the ISP, unaware that the issue is often local channel interference or a specific bandwidth-hogging device.
+- **AI-Assisted Networking:** The market is shifting from reactive diagnostics (user runs a speed test after lag occurs) to proactive AI-assisted networking (the system predicts lag based on historical usage and suggests channel switching).
 
 ## 11. Competitive Analysis
-> `[Placeholder: List key competitors, their strengths, weaknesses, and WiFiPulse's competitive advantage.]`
 
-## 12. Feature Roadmap
+| Feature | WiFiPulse | Fing | WiFiman | Google Home | TP-Link Tether | Net Analyzer | Aruba Utilities |
+|---------|-----------|------|---------|-------------|----------------|--------------|-----------------|
+| **Device Discovery** | High | High | High | Low | Medium | High | High |
+| **Usage Analytics** | High | Low | Low | Medium | Low | Low | Low |
+| **AI Insights** | High | None | None | None | None | None | None |
+| **Router Management**| High | None | None | High (Google Only) | High (TP-Link Only) | None | None |
+| **Speed Test** | High | High | High | High | Low | None | Low |
+| **Security Monitoring**| High | Medium| Low | Low | Low | Low | Low |
+| **Offline Support** | High | Low | Medium| Low | Low | Low | Medium|
+
+## 12. Product Positioning
+WiFiPulse is fundamentally different from existing network tools. It is not just a passive WiFi scanner or a walled-garden router companion app. WiFiPulse is an **AI-powered WiFi Intelligence Platform**. 
+
+While competitors like Fing offer raw network mapping and Net Analyzer offers technical diagnostics, they require the user to interpret the data. Conversely, apps like Google Home or TP-Link Tether offer great UX but are strictly locked to proprietary hardware. WiFiPulse bridges this gap by remaining hardware-agnostic, providing deep technical diagnostics, and crucially, utilizing AI to interpret that data into actionable, plain-English advice for the everyday user.
+
+## 13. SWOT Analysis
+
+### Strengths
+- **AI-Driven Insights:** Differentiates the product from passive scanners by providing proactive solutions.
+- **Hardware Agnostic:** Works across various router brands, avoiding vendor lock-in.
+- **Premium UX:** Material 3 design provides a modern, trustworthy interface lacking in technical competitor apps.
+- **Offline Support:** Core diagnostic features function even when the external internet is down.
+
+### Weaknesses
+- **API Limitations:** Deep router management depends on the availability and openness of specific router APIs.
+- **Resource Intensive:** On-device AI analytics and continuous background monitoring may impact battery life.
+
+### Opportunities
+- **ISP Partnerships:** Potential to white-label the software for smaller ISPs lacking a premium mobile app.
+- **Smart Home Integration:** Future integrations with Matter and Thread protocols to manage local IoT ecosystems directly.
+- **Freemium Upsell:** Strong potential for monetizing advanced AI security audits or historical data retention.
+
+### Threats
+- **ISP Walled Gardens:** Major ISPs increasingly locking down local router access to force users into their proprietary apps.
+- **OS Restrictions:** Android networking API restrictions (e.g., MAC address randomization, strict location permissions) complicating device discovery.
+- **Incumbent Dominance:** Well-established apps like Fing possess massive existing install bases.
+
+## 14. Feature Roadmap
 > `[Placeholder: Provide a high-level timeline or phased release schedule of major features.]`
 
-## 13. Functional Requirements
+## 15. Functional Requirements
 > `[Placeholder: Detailed list of functional requirements using the defined REQ-F-### conventions.]`
 
-## 14. Non Functional Requirements
+## 16. Non Functional Requirements
 > `[Placeholder: Detailed list of system performance, reliability, and usability requirements (REQ-NF-###).]`
 
-## 15. Information Architecture
+## 17. Information Architecture
 > `[Placeholder: Outline the application structure, navigation flow, and screen hierarchy.]`
 
-## 16. Feature Modules
+## 18. Feature Modules
 > `[Placeholder: Break down the application into discrete functional modules.]`
 
-## 17. Technical Architecture
+## 19. Technical Architecture
 > `[Placeholder: Describe the system architecture, frameworks (Flutter, Riverpod), and infrastructure.]`
 
-## 18. UI Design Principles
+## 20. UI Design Principles
 > `[Placeholder: Define the visual language, design system, and Material 3 adherence guidelines.]`
 
-## 19. Security Requirements
+## 21. Security Requirements
 > `[Placeholder: Detail encryption, authentication, authorization, and data protection rules (REQ-S-###).]`
 
-## 20. AI Features
+## 22. AI Features
 > `[Placeholder: Detail any AI/ML driven insights, automation, or analytics features.]`
 
-## 21. Router Integration Strategy
+## 23. Router Integration Strategy
 > `[Placeholder: Explain how the application interfaces with and controls supported routers.]`
 
-## 22. Database Design
+## 24. Database Design
 > `[Placeholder: Outline the local (SQLite) and remote (Firebase) database schema structures.]`
 
-## 23. API Design
+## 25. API Design
 > `[Placeholder: Describe external API endpoints, internal service contracts, and data structures.]`
 
-## 24. Performance Requirements
+## 26. Performance Requirements
 > `[Placeholder: Define strict performance metrics, e.g., cold start < 2s, 60fps animations.]`
 
-## 25. Testing Strategy
+## 27. Testing Strategy
 > `[Placeholder: Detail unit, integration, UI, and user acceptance testing methodologies.]`
 
-## 26. Analytics
+## 28. Analytics
 > `[Placeholder: Define what user behaviors, errors, and system metrics will be tracked.]`
 
-## 27. Accessibility
+## 29. Accessibility
 > `[Placeholder: Outline ADA compliance goals, screen reader support, and contrast requirements.]`
 
-## 28. Monetization Strategy
+## 30. Monetization Strategy
 > `[Placeholder: Describe the revenue model, e.g., freemium, subscriptions, ads, or one-time purchase.]`
 
-## 29. Release Plan
+## 31. Release Plan
 > `[Placeholder: Detail the alpha, beta, and public launch milestones.]`
 
-## 30. Future Roadmap
+## 32. Future Roadmap
 > `[Placeholder: Outline visionary features and integrations planned beyond the initial release.]`
 
-## 31. Risks
+## 33. Risks
 > `[Placeholder: Identify potential technical, market, or execution risks and mitigation strategies.]`
 
-## 32. Assumptions
+## 34. Assumptions
 > `[Placeholder: List assumptions made during the PRD creation that require validation.]`
 
-## 33. Open Questions
+## 35. Open Questions
 > `[Placeholder: List any unresolved product decisions that need stakeholder alignment.]`
 
-## 34. Glossary
+## 36. Glossary
 > `[Placeholder: Define project-specific terms, acronyms, and technical jargon.]`
