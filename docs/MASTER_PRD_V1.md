@@ -37,6 +37,7 @@
 | 1.6 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 6 (Database Design) |
 | 1.7 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 7 (Router Integration Strategy) |
 | 1.8 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 8 (AI Intelligence Engine) |
+| 1.9 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 9 (API & External Services) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -1433,8 +1434,156 @@ erDiagram
 - **Constraints:** `NOT NULL` used wherever possible. Foreign keys explicitly declared.
 - **Validation Rules:** Validated at the Domain layer before insertion (e.g., MAC address regex validation).
 
-## 25. API Design
-> `[Placeholder: Describe external API endpoints, internal service contracts, and data structures.]`
+## 25. API & External Services (Chapter 9)
+
+### 9.1 API Philosophy
+WiFiPulse embraces an **API-first architecture**. Every interaction between the UI and the underlying data layer is handled via strictly defined interfaces, ensuring that the backend can be swapped or scaled without rewriting the frontend.
+
+- **Modular:** Services are completely decoupled. The Authentication Service knows nothing about the Analytics Service.
+- **Secure:** All external API calls require TLS 1.3. Local API calls prioritize encrypted payloads where supported by the router.
+- **Offline-first:** The app assumes the internet is dead. API calls to external cloud services fail gracefully without blocking the UI thread.
+- **Scalable:** Built to easily transition from a single-user SQLite database to a multi-tenant cloud backend.
+- **Versioned APIs:** All external endpoints are strictly versioned (e.g., `/api/v1/`).
+- **Future cloud-ready:** Repositories are designed with the assumption that a remote sync engine will eventually be attached.
+
+### 9.2 Internal Services
+Internal services represent the core logic bridging Repositories and external I/O.
+
+- **Authentication Service:** Manages user sessions, Firebase OAuth token refreshing, and secure local credential storage.
+- **Router Service:** The primary orchestrator for physical router communication, managing HTTP/SOAP/Telnet connections to the gateway.
+- **Discovery Service:** Handles raw socket UDP/TCP broadcasts to map the local subnet (ARP, mDNS).
+- **Device Service:** Enriches raw MAC addresses into human-readable device profiles using local OUI databases.
+- **Analytics Service:** Aggregates real-time bandwidth data into hourly/daily buckets for UI consumption.
+- **Usage Service:** Tracks data limits and forecasts monthly consumption.
+- **AI Service:** Formats network telemetry into structured prompts, communicates with local ML models or remote LLMs, and parses the response.
+- **Notification Service:** Manages the Android Notification Channel hierarchy and schedules background workers.
+- **Report Service:** Interfaces with native OS file systems to generate, save, and share PDF and CSV documents.
+- **Settings Service:** Manages global app state, theme preferences, and unit conversions.
+
+### 9.3 External APIs
+WiFiPulse relies on a curated list of external APIs to enrich local data.
+
+- **Google Gemini API:** Primary engine for the AI Assistant, providing natural language processing and complex anomaly explanation.
+- **Firebase Authentication:** Handles Google/Apple Sign-In and secure session management.
+- **Firebase Cloud Messaging (FCM):** Delivers critical push notifications (e.g., network breaches) when the app is backgrounded.
+- **Firebase Crashlytics:** Captures unhandled Dart exceptions and native crashes for stability monitoring.
+- **Firebase Analytics:** Tracks non-PII user journeys (e.g., screen views) to guide product development.
+- **Google Maps (future):** Visualizing where speed tests were taken geographically (for enterprise versions).
+- **OpenRouter (future):** An abstraction layer to allow switching between different LLMs (Claude, GPT-4, Llama) based on cost and latency.
+- **Weather API (future):** Correlating network instability with severe local weather events (e.g., heavy rain degrading satellite internet).
+- **ISP Status API (future):** Aggregating DownDetector-style data to inform the user if an outage is local or a widespread ISP failure.
+
+### 9.4 Router Communication APIs
+The app must communicate with physical hardware using a variety of legacy and modern protocols.
+
+- **HTTP/HTTPS:** The primary vector for modern routers. We simulate browser logins and parse REST/JSON or scrape HTML.
+- **UPnP (Universal Plug and Play):** Used to query the router for external WAN IP and port forwarding rules.
+- **SSDP (Simple Service Discovery Protocol):** Used to discover UPnP devices on the network.
+- **mDNS (Multicast DNS):** Used to resolve `.local` hostnames (e.g., finding Apple TVs or Printers).
+- **ARP (Address Resolution Protocol):** The core mechanism for discovering active IP/MAC pairings on the subnet.
+- **ICMP (Internet Control Message Protocol):** Ping sweeps used for fast device discovery and latency testing.
+- **DHCP (Dynamic Host Configuration Protocol):** Passively listening (if possible) or querying the router for the active lease table.
+- **DNS (Domain Name System):** Checking resolution times to diagnose slow browsing speeds.
+
+### 9.5 API Security
+Security is paramount, especially when handling router admin credentials.
+
+- **HTTPS:** Enforced for all cloud communication. Cleartext traffic is strictly disabled in the Android manifest.
+- **JWT (JSON Web Tokens):** Used for authenticating against our future proprietary backend.
+- **OAuth:** Used exclusively for user identity management (Firebase).
+- **API Keys:** Stored in native C++ via CMake or in Flutter environment variables; never hardcoded in Dart source.
+- **Rate Limiting:** Implemented on the client side to prevent aggressive polling from crashing fragile home routers.
+- **Certificate Pinning:** Enforced for communication with critical endpoints (e.g., the backend server handling cloud sync).
+- **Retry Strategy:** Exponential backoff (1s, 2s, 4s, 8s) with jitter to prevent thundering herd problems when the internet reconnects.
+- **Timeout Strategy:** Strict 5-second timeouts for local LAN requests; 15-second timeouts for WAN requests.
+
+### 9.6 API Versioning
+To maintain stability, all proprietary endpoints will be versioned.
+
+- **v1:** Initial release. Stable, core functionality.
+- **v2:** Future release introducing breaking changes (e.g., transitioning from REST to GraphQL or WebSockets for real-time telemetry).
+- **Deprecation Policy:** A minimum of 6 months notice provided via app updates before an older API version is retired.
+- **Backward Compatibility:** All `v1` endpoints must remain functional for users who refuse to update their app, ensuring long-term hardware support.
+
+### 9.7 Error Handling
+The UI must never show a raw stack trace. All API errors must be intercepted and categorized.
+
+- **Timeout (408/504):** "The router took too long to respond. It may be overloaded."
+- **Unauthorized (401):** "Router password incorrect or session expired." -> Automatically triggers a silent re-login attempt.
+- **Forbidden (403):** "You do not have permission to change this setting."
+- **Bad Gateway (502):** "The external speed test server is currently unreachable."
+- **Server Error (500):** "An unexpected error occurred. A crash report has been filed."
+- **Offline:** "No internet connection detected. Switching to local mode."
+- **Retry:** Automatically handled at the Service layer for idempotent operations (GET requests).
+- **Fallback:** If the primary LLM API fails, fallback to standard deterministic local rules.
+
+### 9.8 Response Standards
+Standardized JSON structures for any proprietary backend APIs developed for WiFiPulse.
+
+- **Success Format:** 
+  ```json
+  {
+    "status": "success",
+    "data": { ... },
+    "meta": { "timestamp": "2026-06-30T10:00:00Z" }
+  }
+  ```
+- **Error Format:**
+  ```json
+  {
+    "status": "error",
+    "error": {
+      "code": 401,
+      "message": "Session expired",
+      "details": "Token signature invalid"
+    }
+  }
+  ```
+- **Pagination:** Cursor-based pagination for large datasets (e.g., historical speed test logs).
+- **Filtering:** Supported via standard query parameters (e.g., `?type=router&status=active`).
+- **Sorting:** Supported via query parameters (e.g., `?sort=-timestamp`).
+- **Caching:** ETag and Cache-Control headers fully respected by the Dio networking client to minimize bandwidth.
+
+### 9.9 AI API
+Communication with external LLMs requires a specific pipeline to ensure privacy and context.
+
+- **Prompt Pipeline:** Raw telemetry -> PII Redaction -> Prompt Template Injection -> API Call -> JSON Parsing -> UI Presentation.
+- **Context Builder:** A utility that dynamically constructs the prompt based on the user's specific query (e.g., fetching only Gaming devices if the user asks about gaming ping).
+- **Conversation Memory:** Maintaining a rolling window of the last 5 interactions to allow for follow-up questions ("What about the other one?").
+- **Insight Requests:** Scheduled background calls requesting a broad summary of the day's activity.
+- **Recommendation Requests:** Targeted calls asking for specific troubleshooting steps based on a detected anomaly.
+
+### 9.10 Notification APIs
+Managing how the app talks to the Android OS and Firebase.
+
+- **Push Notifications:** Handled via FCM. Payload contains deep links to specific app screens (e.g., `wifipulse://security/alert/123`).
+- **Scheduled Reports:** Triggered locally via Android `WorkManager` or `AlarmManager` to compile the PDF and post a local notification.
+- **Background Alerts:** Silent push notifications that wake the app to perform a quick network scan without disturbing the user.
+
+### 9.11 Future Integrations
+Expanding the WiFiPulse ecosystem beyond the smartphone screen.
+
+- **Cloud Sync:** Full REST/GraphQL API for syncing SQLite databases to the cloud.
+- **Wear OS:** A lightweight companion app API to trigger speed tests from a smartwatch.
+- **Android Auto:** Voice-only API to query network status while driving home.
+- **Google Home / Alexa:** Smart Home Skill APIs allowing voice commands ("Alexa, ask WiFiPulse to pause the kids' WiFi").
+- **Home Assistant:** Local MQTT or REST API exposing WiFiPulse telemetry to self-hosted smart home dashboards.
+- **Matter / SmartThings:** Integrating with IoT standards to identify and manage smart devices more accurately.
+
+---
+
+### API Standards
+- All REST APIs must follow strict OpenAPI (Swagger) specifications.
+- JSON is the sole data interchange format (unless interfacing with a legacy SOAP router).
+- Dates must always be ISO 8601 UTC.
+
+### Security Standards
+- Zero Trust approach: Treat the local router API as hostile; validate all inputs.
+- Never log authorization headers or payload bodies containing PII.
+
+### Integration Principles
+- **Graceful Degradation:** If an external service goes down, the core app must continue to function.
+- **User Consent:** External APIs (like Gemini) must only be called if the user has explicitly agreed to the Privacy Policy.
 
 ## 26. Performance Requirements
 > `[Placeholder: Define strict performance metrics, e.g., cold start < 2s, 60fps animations.]`
