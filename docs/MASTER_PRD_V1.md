@@ -35,6 +35,7 @@
 | 1.4 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 4 (UI/UX Design System) |
 | 1.5 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 5 (System Architecture) |
 | 1.6 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 6 (Database Design) |
+| 1.7 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 7 (Router Integration Strategy) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -913,8 +914,215 @@ The overall design principle is **"Clarity through Abstraction."** The underlyin
 ## 22. AI Features
 > `[Placeholder: Detail any AI/ML driven insights, automation, or analytics features.]`
 
-## 23. Router Integration Strategy
-> `[Placeholder: Explain how the application interfaces with and controls supported routers.]`
+## 23. Router Integration Strategy (Chapter 7)
+
+### 7.1 Introduction
+The **Router Engine** is the core bridge between WiFiPulse's UI and the physical network hardware. Its philosophy is built around being **modular, extensible, secure, and vendor-independent**.
+
+WiFiPulse must support robust **local-only operation**, ensuring that network management does not break during internet outages. While future iterations may embrace cloud-assisted intelligence for aggregate analytics, the core interaction between the app and the router relies on direct, secure API calls over the LAN. 
+
+To achieve this, the Router Engine utilizes a **plugin-based architecture**, allowing developers to write isolated adapters for specific router brands without affecting the core application logic.
+
+### 7.2 Supported Router Vendors
+The following vendors are planned for integration via dedicated plugins:
+
+- **Airtel Xstream Fiber**
+  - *Capabilities:* Basic device list, restart, WiFi name/password management.
+  - *Known limitations:* Heavily locked-down firmware; limited bandwidth metrics.
+  - *Authentication:* Token-based / Session Cookie.
+  - *Future roadmap:* Deep integration with specific Nokia/Huawei OEM models provided by Airtel.
+
+- **JioFiber**
+  - *Capabilities:* Device list, guest WiFi, basic restart.
+  - *Known limitations:* Proprietary API structure often changes with firmware updates.
+  - *Authentication:* Token-based.
+  - *Future roadmap:* Mesh node visibility.
+
+- **TP-Link**
+  - *Capabilities:* Full management (Device ban, QoS, Guest WiFi, usage stats).
+  - *Known limitations:* Cloud-only accounts (Tether) complicate local-only login on newer models.
+  - *Authentication:* Token Authentication / TP-Link Cloud OAuth.
+  - *Future roadmap:* Full Omada SDN integration.
+
+- **ASUS (AsusWRT)**
+  - *Capabilities:* Comprehensive management, raw bandwidth data, AiMesh mapping.
+  - *Known limitations:* Some models require SSH for deep analytics.
+  - *Authentication:* Session Cookies / Token Authentication.
+  - *Future roadmap:* VPN configuration management.
+
+- **Netgear (Orbi/Nighthawk)**
+  - *Capabilities:* Device list, WiFi settings, reboot.
+  - *Known limitations:* SOAP-based API on older models is notoriously slow.
+  - *Authentication:* Basic Authentication / Session.
+  - *Future roadmap:* Armor security integration.
+
+- **D-Link, Tenda, Mercusys**
+  - *Capabilities:* Basic network management, reboot.
+  - *Known limitations:* Unreliable APIs; often rely on HTML scraping.
+  - *Authentication:* Basic Authentication / Session Cookies.
+  - *Future roadmap:* Standardize scraping engines.
+
+- **Huawei, Nokia (ISP Modems)**
+  - *Capabilities:* Gateway IP, basic WiFi settings.
+  - *Known limitations:* Highly variable based on ISP custom firmware.
+  - *Authentication:* Digest / Basic Authentication.
+  - *Future roadmap:* Auto-detection of ISP-specific lockouts.
+
+- **Cisco, MikroTik, Ubiquiti, OpenWRT, DD-WRT**
+  - *Capabilities:* Deep packet inspection, VLANs, SSH access.
+  - *Known limitations:* Target audience is prosumer; APIs require complex configuration.
+  - *Authentication:* Token (UniFi), SSH (MikroTik/OpenWRT).
+  - *Future roadmap:* Prosumer "Advanced Mode" unlock within the app.
+
+### 7.3 Router Discovery
+Before authentication, the app must locate the router and identify its make/model.
+
+- **Gateway Discovery:** Reading the default gateway from the device's current network configuration.
+- **ARP Scan:** Sweeping the local subnet to build an initial MAC-to-IP table.
+- **mDNS & SSDP & UPnP:** Listening for multicast broadcasts to identify smart routers (e.g., Google Nest, UPnP gateways).
+- **DHCP:** Inspecting DHCP lease data (if accessible).
+- **Hostname Discovery:** Resolving local IPs to hostnames via reverse DNS.
+- **Vendor Fingerprinting:** Analyzing HTTP headers on the gateway IP (e.g., `Server: lighttpd/Asus`).
+- **MAC OUI Lookup:** Identifying the router hardware manufacturer via its MAC prefix.
+- **IPv4 / IPv6:** Full dual-stack discovery support.
+- **Multiple Subnet Detection:** Handling complex environments with VLANs or secondary routers.
+
+### 7.4 Router Authentication
+Once discovered, the engine negotiates a session.
+
+- **Supported Protocols:**
+  - `HTTP` / `HTTPS`
+  - `Basic Authentication`
+  - `Digest Authentication`
+  - `Token Authentication` (e.g., Bearer tokens)
+  - `Session Cookies`
+  - `JWT`
+  - `OAuth` (Future, for cloud-managed routers like Eero).
+- **Credential Storage Strategy:** Credentials are saved purely via `FlutterSecureStorage` using OS-level encryption. They are strictly localized to the device.
+- **Re-authentication & Session Expiration:** The engine automatically detects 401/403 errors, attempts a silent re-login using stored credentials, and resumes the previous action without interrupting the user flow.
+
+### 7.5 Router Adapter Architecture
+To support the fragmented router ecosystem, the engine uses the **Adapter Design Pattern**.
+
+```mermaid
+classDiagram
+    class RouterAdapter {
+        <<interface>>
+        +login(username, password) bool
+        +fetchDevices() List~Device~
+        +restartRouter() bool
+        +toggleGuestWiFi(enabled) bool
+        +updateWiFiSettings(ssid, pass) bool
+        +getBandwidth() BandwidthMetrics
+        +getDNS() List~String~
+        +getFirewallStatus() bool
+        +getFirmware() String
+        +logout() void
+    }
+
+    class AsusAdapter {
+        +login() bool
+        +fetchDevices() List~Device~
+    }
+
+    class TPLinkAdapter {
+        +login() bool
+        +fetchDevices() List~Device~
+    }
+
+    RouterAdapter <|-- AsusAdapter
+    RouterAdapter <|-- TPLinkAdapter
+```
+
+Each vendor plugin must implement the `RouterAdapter` interface. If a router does not support a specific action (e.g., Guest WiFi), the adapter throws an `UnsupportedFeatureException`, which the UI gracefully handles by hiding the relevant button.
+
+### 7.6 Device Discovery Engine
+A secondary engine that maps the network independently of the router's API.
+
+- **Fast Scan:** Quick ping sweep of the `/24` subnet.
+- **Deep Scan:** Aggressive port scanning and protocol probing for detailed profiling.
+- **ARP Cache:** Reading the local ARP table to map IP to MAC instantly.
+- **Ping Sweep:** ICMP echo requests to discover silent devices.
+- **Hostname Resolution:** Extracting names via mDNS/NetBIOS.
+- **Vendor Detection:** OUI matching (e.g., `00:1A:11` -> `Google`).
+- **Device Fingerprinting & OS Estimation:** Analyzing open ports and TTL values to guess the OS.
+- **Device Classification:** Categorizing devices (Mobile, PC, IoT).
+- **Duplicate Removal:** Merging duplicate IPs resolving to the same MAC.
+- **Offline Detection:** Tracking devices that fail to respond to consecutive sweeps.
+
+### 7.7 Device Intelligence
+Once a device is discovered, the AI Engine attempts classification to display a recognizable icon and name.
+
+- **Recognizable Categories:** Android, iPhone, Windows, macOS, Linux, Smart TV, Printer, Camera, IoT, Gaming Console, Tablet, Unknown.
+- **Confidence Scoring:** Classification is assigned a confidence score (0-100%). E.g., An Apple OUI with open port 62078 (lockdown) is 99% likely an iPhone/iPad.
+
+### 7.8 Network Topology
+Visualizing the physical layout of the network.
+
+- **Supported Nodes:** Gateway, Mesh nodes, Repeaters, Access Points, Extenders.
+- **Logical Segments:** Guest Network, LAN, WAN, Internet.
+- **Visual Topology Graph:** The UI will feature a node-based graph mapping devices to their specific access point (if the router API supports mesh mapping).
+
+### 7.9 Router Configuration
+Standardized models for configuring the router regardless of brand.
+
+- **General:** SSID, Password, Firmware Version.
+- **Radios:** Channel, Band (2.4 GHz, 5 GHz, 6 GHz).
+- **Features:** Guest WiFi (toggle, password, limits), QoS (Quality of Service priorities).
+- **Networking:** DHCP ranges, DNS servers, Static IP reservations.
+
+### 7.10 Security Analysis
+The engine actively audits the network for vulnerabilities.
+
+- **Open Ports:** Scans the Gateway for exposed WAN management ports (e.g., 80, 443, 22).
+- **Encryption:** Flags weak protocols (WEP, WPA, TKIP).
+- **Weak Passwords:** Warns if the WiFi password is common or short.
+- **Unknown Devices:** Triggers alerts for unrecognized MAC addresses.
+- **Duplicate IP & Rogue Device:** Detects IP conflicts or unexpected secondary DHCP servers.
+- **ARP Spoof Detection:** Monitors for changing MAC addresses on the Gateway IP.
+- **Gateway Validation:** Ensures the gateway IP hasn't been hijacked.
+- **DNS Hijack Detection:** Verifies that DNS requests are not being maliciously redirected.
+- **Security Score:** An aggregated score based on the above factors.
+
+### 7.11 Performance Monitoring
+Standardized metrics collected across all supported routers.
+
+- **Metrics:** Bandwidth (Mbps), Latency (ms), Packet Loss (%), Jitter (ms), Signal Quality (dBm/RSSI).
+- **Network State:** Channel Congestion (identifying overlapping neighboring WiFi networks).
+- **History:** Usage Timeline and Historical Trends stored locally in SQLite.
+
+### 7.12 Future Enterprise Features
+The architecture is designed to scale into B2B use cases.
+
+- **Mesh Controller:** Managing multi-node setups directly.
+- **Cloud Controller:** Remote configuration of routers when away from home.
+- **Remote Router Access:** Secure tunneling.
+- **Enterprise Dashboard:** Managing Multiple Routers across different physical locations.
+- **Business WiFi:** Captive portal management.
+- **Office Analytics:** Deep traffic inspection.
+
+### 7.13 Risks
+- **Router Compatibility:** Highly fragmented market; old models may drop support for APIs.
+- **Firmware Changes:** A firmware update can break the adapter, requiring rapid plugin updates.
+- **Authentication Failures:** Aggressive scanning might trigger router anti-DDoS protections, locking out the app.
+- **Privacy:** Collecting deep network metrics requires absolute transparency with the user.
+- **Vendor Limitations:** Many ISPs actively block third-party local APIs to force usage of their own apps.
+- **Security:** Storing router credentials requires flawless encryption implementation.
+
+---
+
+### Router Engine Principles
+1. Do no harm: Never alter a router configuration without explicit user consent.
+2. Read-only by default: Authenticate only when a change is requested, or when deep metrics are needed.
+3. Fallback gracefully: If the Router API is unreachable, fallback to standard ARP/Ping network mapping.
+
+### Plugin Development Guidelines
+- Adapters must implement the interface exactly.
+- HTTP scraping is allowed only if an API does not exist.
+- Hardcoded delays/sleeps are forbidden; use reactive polling.
+
+### Future Vendor Expansion Strategy
+Create an open-source adapter repository allowing the community to submit plugins for obscure or regional ISP routers, dynamically loaded by the main application.
 
 ## 24. Database Design (Chapter 6)
 
