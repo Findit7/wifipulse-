@@ -39,6 +39,7 @@
 | 1.8 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 8 (AI Intelligence Engine) |
 | 1.9 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 9 (API & External Services) |
 | 1.10 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 10 (Security & Privacy) |
+| 1.11 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 11 (Testing & Quality Assurance) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -1712,8 +1713,173 @@ Expanding the WiFiPulse ecosystem beyond the smartphone screen.
 ## 26. Performance Requirements
 > `[Placeholder: Define strict performance metrics, e.g., cold start < 2s, 60fps animations.]`
 
-## 27. Testing Strategy
-> `[Placeholder: Detail unit, integration, UI, and user acceptance testing methodologies.]`
+## 27. Testing & Quality Assurance (Chapter 11)
+
+### 11.1 Testing Philosophy
+WiFiPulse demands absolute stability. An app designed to fix network issues cannot be the cause of them.
+
+- **Test Pyramid:** Heavy emphasis on unit tests (fast, isolated) over end-to-end tests (slow, brittle).
+- **Shift Left Testing:** QA is involved during the design phase. Tests are written before or alongside the code (TDD).
+- **Continuous Testing:** Every PR triggers a full automated test suite via GitHub Actions. Merges are blocked if coverage drops or tests fail.
+- **Quality Gates:** Strict criteria must be met before transitioning from Dev -> Beta -> Production.
+
+### 11.2 Testing Levels
+
+- **Unit Testing:** Validates individual functions and classes in isolation (e.g., testing if the MAC address validator regex works).
+- **Widget Testing:** Flutter-specific UI testing. Validates that a widget renders correctly given a specific state (e.g., the Security Card turns red when a threat is passed to it).
+- **Integration Testing:** Validates that two or more modules communicate correctly (e.g., Repository fetching data from a mock SQLite database).
+- **End-to-End Testing (E2E):** Validates the entire user journey on a physical device/emulator (e.g., launching the app, logging in, and running a scan).
+- **System Testing:** Validates the app's interaction with the host OS (e.g., handling push notifications, requesting location permissions).
+- **Acceptance Testing:** Validates that the app meets the business requirements defined in this PRD (performed by stakeholders and beta users).
+
+### 11.3 Module-wise Test Plan
+
+- **Authentication**
+  - *Functional:* Login with correct credentials, logout.
+  - *Negative:* Login with invalid passwords, revoked tokens.
+  - *Edge Cases:* Network drops during OAuth handshake.
+  - *UI:* Error messages render correctly on all screen sizes.
+- **Dashboard**
+  - *Functional:* Displays correct active device count and current network SSID.
+  - *Performance:* Renders at 60fps while animating the hero header.
+- **Router Discovery**
+  - *Functional:* Successfully identifies gateway IP via ARP.
+  - *Negative:* Fails gracefully if OS blocks subnet scanning.
+- **Device Scanner**
+  - *Functional:* Scans /24 subnet and identifies all active nodes.
+  - *Edge Cases:* Duplicate IPs handling, MAC randomization handling.
+  - *Performance:* Completes full `/24` scan in under 5 seconds.
+- **Speed Test**
+  - *Functional:* Accurately measures latency, download, and upload against a test server.
+  - *Negative:* Handles server unreachable errors without crashing.
+- **Usage Analytics**
+  - *Functional:* Accurately aggregates daily byte counts into monthly totals.
+  - *Edge Cases:* Handling daylight saving time boundary crossovers.
+- **AI Insights**
+  - *Functional:* Properly injects telemetry into prompt template.
+  - *Negative:* Handles 429 Too Many Requests from external LLM gracefully.
+- **Security**
+  - *Functional:* Flags WEP encryption as high-risk.
+  - *Negative:* Does not flag standard WPA2/3 as insecure.
+- **Settings**
+  - *Functional:* Toggling Dark Mode instantly updates the UI.
+- **Notifications**
+  - *Functional:* Tapping a security alert deep-links to the Threat Details screen.
+- **Reports**
+  - *Functional:* Generates a valid, readable PDF summarizing the week's analytics.
+
+### 11.4 Test Cases
+
+**TEST-001: Subnet Device Discovery**
+- *Objective:* Verify the scanner can find standard devices on a typical home network.
+- *Steps:* 1. Connect phone to WiFi. 2. Launch App. 3. Tap "Scan Network".
+- *Expected Result:* The app displays the Gateway, the phone running the app, and at least one other known device.
+- *Priority:* Critical
+- *Pass Criteria:* Scan completes within 5 seconds; MAC addresses are correct.
+
+**TEST-002: Offline Resilience**
+- *Objective:* Verify the app functions when the ISP connection drops.
+- *Steps:* 1. Connect phone to WiFi. 2. Disconnect the router's WAN cable (internet drops). 3. Launch App.
+- *Expected Result:* App launches normally, displays an "Offline Mode" banner, but still allows local device scanning and router rebooting.
+- *Priority:* Critical
+- *Pass Criteria:* No infinite loading spinners; no crashes; local UI remains responsive.
+
+### 11.5 Automation Strategy
+
+- **Flutter Test:** The core framework for unit and widget tests. Run locally by developers before committing.
+- **Integration Test:** Flutter's package for running UI tests on emulators/real devices.
+- **Golden Tests:** Used to prevent visual regressions. Compares pixel-perfect snapshots of widgets against a baseline image.
+- **Firebase Test Lab:** Executes E2E tests across a matrix of physical Android devices (various screen sizes, OS versions, and manufacturers) in the cloud.
+- **GitHub Actions:** The CI/CD pipeline. Automatically runs `flutter analyze`, unit tests, and triggers Test Lab on every Pull Request.
+- **Regression Automation:** All reported bugs must have a failing test written *before* the fix is implemented to prevent regressions.
+
+### 11.6 Performance Testing
+
+- **Cold Start:** Time from app icon tap to interactive Dashboard. *Target: < 2.0 seconds.*
+- **Warm Start:** Resuming the app from the background. *Target: < 0.5 seconds.*
+- **Memory Usage:** Heap size during idle state. *Target: < 150MB.*
+- **Battery Usage:** Drain during background monitoring. *Target: < 2% per day.*
+- **CPU Usage:** Utilization during an active device scan. *Target: < 40%.*
+- **Large Network Scan:** Simulating a `/16` enterprise subnet to verify the scanning algorithm doesn't lock the UI thread.
+- **100+ Devices:** UI stress test to ensure the Device List scrolls at 60fps with hundreds of avatars.
+- **1000+ Analytics Records:** Database stress test to ensure SQLite `GROUP BY` aggregations execute in < 50ms.
+
+### 11.7 Network Testing
+Testing in non-ideal real-world conditions.
+
+- **Slow WiFi:** Throttling connection to 3G speeds via proxy to test loading skeletons.
+- **Offline Mode:** Complete WAN outage.
+- **Router Restart:** Forcing a disconnect mid-API call to verify error recovery.
+- **Packet Loss:** Simulating 20% packet loss to verify timeout and retry mechanisms.
+- **High Latency:** Simulating 500ms ping to ensure optimistic UI updates feel responsive.
+- **Captive Portal:** Handling hotel/airport WiFi that intercepts HTTPS requests.
+- **Weak Signal:** Testing behavior when RSSI drops below -80dBm.
+- **Mesh Network:** Walking between nodes to test how the app handles BSSID roaming.
+- **Dual Band:** Verifying the app correctly identifies whether the phone is on 2.4GHz or 5GHz.
+
+### 11.8 Security Testing
+
+- **Authentication:** Attempting to bypass the login screen via deep links.
+- **Permission Abuse:** Denying all OS permissions and ensuring the app explains why it's broken rather than crashing.
+- **MITM:** Intercepting traffic with Charles Proxy to verify certificate pinning rejects the connection.
+- **ARP Spoofing:** Simulating an ARP poisoning attack on the test network to verify the Anomaly Engine fires an alert.
+- **Credential Protection:** Dumping the app's memory space on a rooted device to verify passwords are not stored in plaintext variables.
+- **Certificate Validation:** Presenting a self-signed cert to the router login flow and ensuring the user is warned.
+- **Local Database Encryption:** Verifying that extracting the `db.sqlite` file off a non-rooted device yields encrypted/inaccessible data.
+
+### 11.9 User Acceptance Testing
+
+- **Student:** Focuses on ease of use, gaming optimization, and cost (free tier features).
+- **Home User:** Focuses on setting up Guest WiFi and diagnosing streaming buffering.
+- **Power User:** Focuses on deep analytics, port scanning, and UI density.
+- **Small Office:** Focuses on detecting unauthorized devices and monitoring total bandwidth usage.
+- **Enterprise Pilot:** A controlled rollout to a small MSP (Managed Service Provider) to validate multi-router management (future).
+- **Acceptance Criteria:** Minimum 4.5/5 rating across all user personas during the beta phase.
+
+### 11.10 Release Quality Gates
+
+- **Beta Checklist:**
+  - All Critical/High bugs resolved.
+  - Unit test coverage > 70%.
+  - No memory leaks detected during 24-hour soak test.
+- **Release Checklist:**
+  - Zero known crashes.
+  - All localization strings verified.
+  - App Store / Play Store assets finalized.
+  - Production Firebase environment configured.
+- **Critical Bug Policy:** Any bug causing a crash on launch, data loss, or security exposure stops the release pipeline immediately.
+- **Crash Rate Targets:** < 0.1% crash-free sessions (Play Store standard).
+- **Performance Targets:** 99th percentile cold start < 3 seconds.
+- **Play Store Readiness:** App bundle size < 30MB, all privacy forms completed, target API level set to the latest Android version.
+
+### 11.11 Future Testing
+
+- **AI-assisted Testing:** Using LLMs to automatically generate unit tests for edge cases based on codebase analysis.
+- **Self-healing Tests:** Implementing UI test frameworks that use visual recognition rather than rigid XPaths/Keys, preventing test breakage when UI layouts shift slightly.
+- **Device Farm Expansion:** Testing on a broader array of obscure, low-end Android devices prevalent in emerging markets.
+- **Chaos Testing:** Randomly terminating services (e.g., killing the local SQLite thread) in a staging environment to observe app resilience.
+- **Predictive QA:** Analyzing user behavior logs to identify UI paths most likely to contain undiscovered bugs.
+
+---
+
+### Testing Checklist
+- [ ] TDD (Test Driven Development) mandated for core domain logic.
+- [ ] Golden tests created for all custom UI components.
+- [ ] GitHub Actions CI pipeline established blocking PRs on test failure.
+
+### Release Checklist
+- [ ] ProGuard/R8 obfuscation enabled and tested.
+- [ ] Crashlytics mapping files uploaded.
+- [ ] Analytics verified working in production environment.
+
+### QA Metrics Dashboard
+- Crash-free users %
+- Test Coverage %
+- Average time to resolve critical bugs
+- App Start Time (Cold/Warm)
+
+### Future Improvements
+- Integrating automated security scanning (SAST/DAST) directly into the CI pipeline to catch vulnerabilities before they are merged.
 
 ## 28. Analytics
 > `[Placeholder: Define what user behaviors, errors, and system metrics will be tracked.]`
