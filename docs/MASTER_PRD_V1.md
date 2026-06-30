@@ -38,6 +38,7 @@
 | 1.7 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 7 (Router Integration Strategy) |
 | 1.8 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 8 (AI Intelligence Engine) |
 | 1.9 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 9 (API & External Services) |
+| 1.10 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 10 (Security & Privacy) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -910,8 +911,131 @@ The overall design principle is **"Clarity through Abstraction."** The underlyin
 ### Future UI Improvements
 > `[Placeholder: Plans for dynamic themes based on router brand, AR network mapping, widget expansion]`
 
-## 21. Security Requirements
-> `[Placeholder: Detail encryption, authentication, authorization, and data protection rules (REQ-S-###).]`
+## 21. Security & Privacy (Chapter 10)
+
+### 10.1 Security Philosophy
+WiFiPulse operates in one of the most sensitive environments possible: the user's home network. Security and privacy are not features; they are the foundation of the product.
+
+- **Zero Trust:** Treat every connected device, including the local router, as potentially hostile or compromised. Validate all incoming data.
+- **Local-first:** Data lives on the user's phone. No telemetry leaves the device without explicit consent.
+- **Least Privilege:** Request only the exact OS permissions necessary for the current task. Explain *why* before asking.
+- **Privacy by Design:** Strip PII (Personally Identifiable Information) from all analytics and AI payloads by default.
+- **Offline-first:** Security features (like device scanning) must work without an active internet connection.
+
+### 10.2 Authentication Security
+Securing the user's identity within the app.
+
+- **Firebase Authentication:** Primary identity provider.
+- **Google Sign-In & Email Login:** Supported methods. No custom password hashing is performed; we rely entirely on Google's infrastructure.
+- **Session Management:** Managed natively by the Firebase SDK.
+- **Token Expiration & Refresh Tokens:** Handled transparently by Firebase. The app must gracefully handle revoked sessions by redirecting to the login screen.
+- **Biometric Login:** App-level lock requiring fingerprint/FaceID before launching, protecting router admin access if the phone is unlocked.
+- **Passkeys (Future):** Phishing-resistant authentication for the planned enterprise cloud dashboard.
+
+### 10.3 Device Security
+Managing the entities connected to the network.
+
+- **Secure Device Registration:** Generating a unique UUID for each device installation.
+- **Trusted Devices:** Users can explicitly flag MAC addresses as "Trusted" (e.g., their own PC).
+- **Unknown Device Detection:** Any MAC address not in the Trusted list triggers an immediate security warning.
+- **Device Fingerprinting:** Using open ports, TTL, and OUI to detect spoofed MAC addresses (e.g., if a known iPhone suddenly starts acting like a Linux server).
+- **Risk Scoring:** Assigning a threat level to devices based on their behavior (e.g., a smart bulb scanning port 22 gets a High Risk score).
+
+### 10.4 Router Security
+Interfacing safely with the network gateway.
+
+- **Credential Encryption:** Router admin passwords are encrypted at rest using OS-level secure storage (Keystore/Keychain). They are never synced to the cloud.
+- **Router Password Handling:** Passwords are held in memory only for the exact duration of the login request and then explicitly cleared.
+- **Certificate Validation:** The app verifies TLS certificates when talking to modern routers and warns the user if a self-signed certificate changes unexpectedly (preventing MITM).
+- **HTTPS Enforcement:** Prefer HTTPS for router admin panels. Fallback to HTTP only if explicitly permitted by the user for legacy hardware.
+- **Connection Retry Rules:** To prevent triggering router anti-brute-force mechanisms, failed logins invoke exponential backoff and lock out the UI after 3 failures.
+
+### 10.5 Data Protection
+Securing data at rest and in transit.
+
+- **AES Encryption:** Used for any custom payload encryption before hitting the local database.
+- **Encrypted SharedPreferences:** Used for configuration flags to prevent root-access tampering.
+- **Flutter Secure Storage:** The sole repository for JWTs, OAuth tokens, and Router passwords.
+- **SQLite Encryption Strategy:** SQLCipher (via drift) will be evaluated if the app scales to enterprise B2B use cases; for consumer use, standard OS sandboxing is currently sufficient.
+- **Sensitive Data Rules:** MAC addresses and SSIDs are considered sensitive. They are never logged to Crashlytics or external Analytics.
+
+### 10.6 AI Privacy
+Balancing the need for intelligence with the right to privacy.
+
+- **Local Processing:** Deterministic rules run entirely on-device (e.g., weak encryption detection).
+- **Cloud Processing:** Complex NLP queries are routed to cloud LLMs (e.g., Gemini API).
+- **Prompt Sanitization:** Before sending a prompt to the cloud, the Context Builder scrubs exact MAC addresses (replaced with hashes) and SSIDs (replaced with "User_WiFi").
+- **PII Removal:** No IP addresses, emails, or names are sent to the AI.
+- **No Password Collection:** Router passwords are never passed to the AI Engine.
+- **No Router Credential Upload:** Credentials never leave the physical device under any circumstance.
+
+### 10.7 Permissions Policy
+Strict adherence to Google Play / App Store guidelines regarding user permissions.
+
+- **WiFi (Local Network):** Required to scan for the gateway IP and communicate with the router.
+- **Nearby Devices (Bluetooth/UWB):** Required for discovering smart home IoT devices during network scans.
+- **Location:** *Crucially required by Android* to read the current SSID (WiFi network name). The app will display a pre-prompt explaining that WiFiPulse does not track physical location, but the OS requires this permission to identify the network.
+- **Notifications:** Required to alert the user of security breaches (e.g., "Unknown device joined").
+- **Storage:** Required to save PDF/CSV exported reports.
+- **Background Tasks:** Required to run scheduled speed tests and device scans while the app is closed.
+- **Battery Optimization:** The app will request exemption from Doze mode to ensure background security scans fire reliably.
+
+### 10.8 Threat Model
+Mitigation strategies for expected network attacks.
+
+- **MITM (Man in the Middle):** Prevented via certificate pinning for cloud APIs and certificate validation for router APIs.
+- **ARP Spoofing:** Detected by monitoring the MAC address associated with the Gateway IP. If it changes rapidly, an alert is fired.
+- **Rogue Router / Fake Access Point (Evil Twin):** Detected by comparing the BSSID of the current connection against the known, trusted BSSID for that SSID.
+- **DNS Hijacking:** Detected by querying a known safe server (e.g., 1.1.1.1) and comparing the IP resolution against the ISP's DNS resolution.
+- **Credential Theft:** Mitigated by Secure Storage and zero-cloud-sync of router passwords.
+- **Replay Attack:** Mitigated by enforcing HTTPS and short-lived session tokens for all cloud APIs.
+- **Session Hijacking:** Mitigated by binding Firebase session tokens to the device installation ID.
+
+### 10.9 Security Monitoring
+Proactive alerts based on the Anomaly Detection engine.
+
+- **Anomaly Detection:** Flagging unusual bandwidth spikes (e.g., a smart TV uploading 50GB at 3 AM).
+- **Failed Login Alerts:** Warning the user if the router logs show brute-force attempts on the admin panel.
+- **Unknown Device Alerts:** Push notifications when a new MAC address requests a DHCP lease.
+- **Router Change Detection:** Alerting if DNS settings or Port Forwarding rules are modified without the user's knowledge.
+- **Suspicious Activity Timeline:** A dedicated UI screen chronologically listing all detected security events.
+
+### 10.10 Compliance
+Adhering to global data protection regulations.
+
+- **GDPR & CCPA:** Full compliance. The user can export their entire dataset (JSON) or delete their account permanently via in-app buttons.
+- **Google Play Policy:** Compliance with Prominent Disclosure requirements for Location and Background usage.
+- **Android Privacy Requirements:** Supporting Android 14+ strict granular permissions (e.g., exact alarm permissions).
+- **Data Retention:** Cloud analytics (Firebase) retain data for a maximum of 14 months.
+- **Data Deletion:** Deleting the app deletes the local SQLite database. Deleting the account via the UI triggers a Firebase Cloud Function to purge all cloud references.
+
+### 10.11 Future Security
+Roadmap for advancing the security posture.
+
+- **Passkeys:** Implementing WebAuthn for passwordless, phishing-proof logins.
+- **Hardware-backed Keys:** Utilizing Android StrongBox / Apple Secure Enclave for signing local telemetry payloads.
+- **TPM (Trusted Platform Module):** Leveraging hardware attestation to ensure the app isn't running on a rooted/compromised device.
+- **On-device LLM Security:** Moving natural language processing entirely to the local device (e.g., Gemini Nano) to guarantee zero data exfiltration.
+
+---
+
+### Security Checklist
+- [ ] No hardcoded API keys in Dart code.
+- [ ] Router passwords stored only in `FlutterSecureStorage`.
+- [ ] PII sanitized before hitting any external API.
+- [ ] Cleartext HTTP disabled for WAN traffic.
+
+### Privacy Checklist
+- [ ] Prominent disclosure shown before requesting Location permission.
+- [ ] Account deletion button accessible within 2 taps from Settings.
+- [ ] Analytics opt-out toggle provided during onboarding.
+
+### Compliance Checklist
+- [ ] Privacy Policy linked on Login and Registration screens.
+- [ ] GDPR Data Export functionality implemented.
+
+### Future Enhancements
+- Integration with external Threat Intelligence feeds (e.g., AbuseIPDB) to flag outbound traffic to known botnets.
 
 ## 22. AI Intelligence Engine (Chapter 8)
 
