@@ -36,6 +36,7 @@
 | 1.5 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 5 (System Architecture) |
 | 1.6 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 6 (Database Design) |
 | 1.7 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 7 (Router Integration Strategy) |
+| 1.8 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 8 (AI Intelligence Engine) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -911,8 +912,182 @@ The overall design principle is **"Clarity through Abstraction."** The underlyin
 ## 21. Security Requirements
 > `[Placeholder: Detail encryption, authentication, authorization, and data protection rules (REQ-S-###).]`
 
-## 22. AI Features
-> `[Placeholder: Detail any AI/ML driven insights, automation, or analytics features.]`
+## 22. AI Intelligence Engine (Chapter 8)
+
+### 8.1 AI Vision
+The philosophy of the WiFiPulse AI is to democratize network engineering. It shifts the burden of interpreting raw data (e.g., "Ping 150ms", "Channel 6 Congested") away from the user and onto the system.
+
+The AI must function as:
+- **Personal Network Assistant:** Answering plain-language queries about the network state.
+- **Home Network Analyst:** Identifying long-term trends and bottlenecks.
+- **Security Advisor:** Recognizing threats before they cause damage.
+- **Performance Optimizer:** Recommending configuration changes to squeeze maximum speed from existing hardware.
+- **Predictive Intelligence Engine:** Foreseeing issues before the user even notices them.
+
+**Core Rule:** The AI should *always* provide explainable recommendations. If it suggests changing a channel, it must explain *why* (e.g., "Because 3 of your neighbors are broadcasting on the same frequency, causing interference").
+
+### 8.2 AI Architecture
+The AI Engine sits above the Data Layer, consuming aggregated metrics and historical logs to output structured insights.
+
+```mermaid
+graph TD
+    A[Raw Telemetry Data] --> B(AI Knowledge Graph)
+    B --> C{AI Engine Core}
+    C --> D[Insight Engine]
+    C --> E[Recommendation Engine]
+    C --> F[Forecast Engine]
+    C --> G[Pattern Recognition]
+    C --> H[Anomaly Detection]
+    D --> I(User Dashboard Cards)
+    E --> J(Actionable UI Buttons)
+    F --> K(Predictive Alerts)
+    
+    L[Local Rule Engine] -.->|Fast/Deterministic Rules| C
+    M[LLM Integration Layer] -.->|Complex Natural Language| C
+    N[Cloud AI - Future] -.->|Aggregated Community Data| M
+```
+
+- **Local Rule Engine:** Deterministic `if/then` logic for immediate, obvious fixes (e.g., if WEP is detected -> flag as insecure). Runs instantly on-device.
+- **LLM Integration Layer:** Uses large language models (either on-device via ML Kit/TFLite or via secure API) to generate natural, conversational summaries of complex multi-variable situations.
+
+### 8.3 AI Knowledge Sources
+To generate accurate insights, the AI consumes data from the following vectors:
+- **Router data:** Firmware version, uptime, capabilities, current settings.
+- **Speed tests:** Historical ping, jitter, and throughput results.
+- **Bandwidth usage:** Traffic patterns mapped against time of day.
+- **Connected devices:** Hardware profiles, capabilities (e.g., WiFi 6 compatible), and OS.
+- **Historical usage:** Long-term baselines to establish "normal" behavior.
+- **Security audits:** Logs of open ports and encryption standards.
+- **Device behavior:** Normal active hours for specific MAC addresses.
+- **Signal quality:** RSSI values reported by the router.
+- **Network topology:** Placement of mesh nodes and repeaters.
+- **User preferences:** User-defined priorities (e.g., "Gaming" vs "Streaming").
+
+### 8.4 Insight Generation
+Insights are non-actionable observations that help the user understand their network context.
+
+- **Daily Insights:** "Your internet dropped twice yesterday at 2 AM."
+- **Weekly Insights:** "Your total data usage increased by 15% this week."
+- **Monthly Reports:** Aggregated summaries of network uptime and top bandwidth consumers.
+- **Bandwidth Analysis:** "The Living Room TV consumes 40% of your total monthly data."
+- **Usage Analysis:** "Network traffic peaks daily between 7 PM and 10 PM."
+- **Router Health:** "Your router has been running for 45 days without a reboot. Memory usage is high."
+- **WiFi Health:** "The 2.4GHz band is highly congested, but your 5GHz band is clear."
+- **Internet Health:** "Your ISP is delivering 95% of your promised 100Mbps speed."
+- **Device Health:** "Your smart thermostat has poor signal strength."
+- **Overall Network Health:** A holistic summary combining all the above factors.
+
+### 8.5 Recommendation Engine
+Recommendations are actionable prompts that allow the user to resolve an issue with one tap.
+
+- **Slow WiFi:** "Move closer to the router or consider a mesh extender."
+- **Channel congestion:** "Tap here to switch your 2.4GHz radio from Channel 6 to Channel 11."
+- **Weak password:** "Your WiFi password 'password123' is compromised. Tap to generate and apply a new secure key."
+- **Guest WiFi:** "You have unknown devices connected. Consider enabling a Guest Network for visitors."
+- **Firmware updates:** "Your router firmware is 2 years out of date. Tap to initiate an update."
+- **Router placement:** "Devices in the kitchen report weak signals. Try moving your router to a more central location."
+- **Bandwidth optimization:** "Your PC is currently downloading a large file. Tap to temporarily throttle it and prioritize the living room TV."
+- **DNS optimization:** "Your ISP's DNS is responding slowly. Tap to switch to Cloudflare (1.1.1.1) for faster browsing."
+- **Gaming optimization:** "Tap to enable QoS prioritizing your PlayStation 5."
+- **Streaming optimization:** "Ensure your Smart TV is connected to the 5GHz network, not 2.4GHz."
+- **Video meeting optimization:** "Zoom traffic detected. Temporarily pausing background syncs on your phone."
+
+### 8.6 Predictive Analytics
+Using historical data to foresee future states via the Forecast Engine.
+
+- **Peak usage:** Predicting when the network will be heavily loaded based on past behavior.
+- **Future bandwidth:** Estimating if the user will exceed their monthly ISP data cap.
+- **Possible outages:** Predicting hardware failure if router thermals or memory utilization trend upward.
+- **Congestion:** Anticipating neighborhood channel overlap during evening hours.
+- **Device growth:** Forecasting when the router will run out of DHCP leases based on the rate of new smart home additions.
+- **Monthly consumption:** Extrapolating current usage to a 30-day total.
+- **Router degradation:** Warning when an aging router is no longer capable of handling the number of concurrent connections.
+- **Storage requirements:** Predicting when local SQLite caches need archival to prevent app bloat.
+
+### 8.7 AI Security Intelligence
+The Anomaly Detection engine constantly monitors the baseline for deviations.
+
+- **Unknown devices:** "A new 'Samsung Galaxy' joined the network while you were asleep."
+- **Suspicious activity:** "Your smart bulb is attempting to upload data to an unrecognized foreign IP address."
+- **Repeated failures:** "5 failed login attempts to your router's admin panel were detected in the last minute."
+- **Network anomalies:** "Total upload traffic spiked 500% in the last hour. Verify your devices."
+- **Port scanning:** "External scans detected against your WAN IP."
+- **Rogue access points:** "A new WiFi network named 'MyHomeWiFi_5G' appeared nearby. This might be an evil twin attack."
+- **ARP spoofing:** "Two devices are claiming to be the gateway. Possible man-in-the-middle attack."
+- **DNS hijacking:** "Your DNS settings were changed to an untrusted server."
+- **Unusual traffic:** "Your network printer is generating high volumes of UDP traffic."
+
+### 8.8 AI Assistant
+A conversational interface (chatbot) allowing users to query their network in natural language.
+
+*Example Capabilities:*
+- **User:** "Why is my WiFi slow?"
+  **AI:** "I see three devices downloading updates right now, consuming 90% of your bandwidth. I can pause them for you."
+- **User:** "Which device uses the most data?"
+  **AI:** "Your Apple TV used 150GB this month, mostly streaming 4K video."
+- **User:** "How do I improve gaming?"
+  **AI:** "Your ping is high because the PC is on the 2.4GHz band. Connecting it via Ethernet or switching to 5GHz will cut your ping in half."
+- **User:** "Is my network secure?"
+  **AI:** "Mostly. You use strong WPA3 encryption, but your router admin password is still set to the factory default."
+- **User:** "What changed today?"
+  **AI:** "Two new devices joined (a Smart Plug and an iPad), and your ISP dropped the connection for 5 minutes at 3 PM."
+
+### 8.9 AI Scoring
+The AI distills complex matrices into simple 0-100 scores.
+
+- **Network Health:** Overall synthesis of speed, reliability, and security.
+- **Router Health:** CPU, memory, uptime, and firmware age.
+- **Security:** Encryption strength, open ports, password complexity.
+- **Performance:** Actual throughput vs ISP promised throughput.
+- **Coverage:** Average RSSI across all connected wireless devices.
+- **Reliability:** Uptime percentage and frequency of disconnects.
+- **AI Confidence:** A meta-score indicating how certain the AI is of its own recommendations (based on data volume).
+- **Risk:** Probability of a security breach or hardware failure in the near future.
+
+*Scoring Methodology:* Scores are calculated locally using a weighted average algorithm. Security factors heavily penalize the overall Network Health score if critical vulnerabilities (like Open WiFi) are detected.
+
+### 8.10 Automation
+Moving from reactive to proactive network management.
+
+- **Automatic notifications:** Immediate push alerts for critical security events.
+- **Automatic optimization suggestions:** Pushing a recommendation card to the dashboard when congestion is detected.
+- **Scheduled reports:** Generating the Weekly Summary PDF automatically on Sunday mornings.
+- **Background analysis:** The AI engine periodically wakes up via `WorkManager` to run silent audits.
+- **Health monitoring:** Continuous polling of the gateway IP to verify uptime.
+- **Predictive alerts:** Warning the user *before* an expected peak usage window.
+
+### 8.11 Privacy
+AI requires data, but user privacy is the highest priority.
+
+- **Local-first AI:** Rule-engine and deterministic scoring happen 100% on-device. No data leaves the phone.
+- **Cloud AI permissions:** If a feature requires an external LLM (e.g., natural language generation), the user must explicitly opt-in.
+- **Anonymous analytics:** If opted-in, payloads sent to the LLM are stripped of PII (MAC addresses replaced with hashes, SSIDs redacted).
+- **Data retention:** Cloud AI retains zero logs. Local AI retains data based on user-defined limits (e.g., 30 days).
+- **Opt-in AI:** The entire Conversational Assistant can be disabled in Settings.
+- **Privacy controls:** Users can export or delete their entire AI profile instantly.
+
+### 8.12 Future AI Roadmap
+- **Offline LLM:** Transitioning the Conversational Assistant to a quantized local model (e.g., Gemini Nano) executing natively on Android to eliminate API latency and privacy concerns.
+- **Voice Assistant:** "Hey Google, ask WiFiPulse to restart my router."
+- **Image-based Router Setup:** User takes a picture of the sticker on the back of their router, and the AI automatically parses the credentials and configures the app using OCR.
+- **Natural Language Queries:** "Show me a graph of my Xbox usage this week."
+- **Enterprise AI:** Identifying patterns across thousands of deployed routers to predict mass ISP outages before the ISP reports them.
+- **WiFi Copilot:** A floating widget offering real-time suggestions while the user browses the web.
+- **Network Digital Twin:** Creating a complete simulated model of the home network to test configuration changes virtually before applying them to physical hardware.
+
+---
+
+### AI Design Principles
+1. **Clarity over Complexity:** Never confuse the user with jargon. Translate `802.11ac` to `WiFi 5`.
+2. **Actionable Over Informational:** Knowing there is a problem is useless without a button to fix it.
+3. **Respect the Baseline:** Do not alert the user to "anomalies" until the AI has observed the network long enough to know what "normal" looks like.
+
+### Responsible AI Guidelines
+- The AI will never autonomously block a device or change a password without explicit user confirmation.
+- The AI must admit when it lacks sufficient data to make a recommendation.
+
+### Future AI Vision
+To evolve WiFiPulse from a diagnostic tool into an autonomous, self-healing network manager that resolves congestion and security threats in the background, requiring zero user intervention.
 
 ## 23. Router Integration Strategy (Chapter 7)
 
