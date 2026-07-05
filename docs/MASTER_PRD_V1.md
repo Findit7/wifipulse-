@@ -40,6 +40,7 @@
 | 1.9 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 9 (API & External Services) |
 | 1.10 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 10 (Security & Privacy) |
 | 1.11 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 11 (Testing & Quality Assurance) |
+| 1.12 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 12 (DevOps & Release Engineering) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -1890,8 +1891,154 @@ Testing in non-ideal real-world conditions.
 ## 30. Monetization Strategy
 > `[Placeholder: Describe the revenue model, e.g., freemium, subscriptions, ads, or one-time purchase.]`
 
-## 31. Release Plan
-> `[Placeholder: Detail the alpha, beta, and public launch milestones.]`
+## 31. DevOps & Release Engineering (Chapter 12)
+
+### 12.1 DevOps Philosophy
+WiFiPulse treats operations and deployment as a first-class engineering discipline.
+
+- **Automation First:** If a task needs to be done more than once, script it. No manual builds.
+- **Reproducible Builds:** Any developer must be able to pull a tag and build the exact same binary that was shipped to production.
+- **Continuous Integration (CI):** Code is continuously merged into the main branch, validated by automated tests and static analysis.
+- **Continuous Delivery (CD):** Validated code is automatically packaged into a release artifact, ready for deployment at the push of a button.
+- **Infrastructure as Code:** CI/CD pipelines, Firebase configs, and environment settings are version-controlled alongside the application code.
+- **Release Reliability:** The primary metric of DevOps success is the ability to ship updates without breaking existing functionality.
+
+### 12.2 Git Workflow Strategy
+We utilize a modified GitFlow approach optimized for mobile app development.
+
+- **Branch Strategy:**
+  - `main`: The source of truth. Always represents the code currently in Production on the Play Store.
+  - `development`: The active integration branch. All features merge here first.
+  - `feature/*`: Short-lived branches for new functionality (e.g., `feature/ai-insights`). Merges into `development`.
+  - `hotfix/*`: Urgent fixes cut directly from `main` (e.g., `hotfix/crash-on-login`). Merges into both `main` and `development`.
+  - `release/*`: Cut from `development` when preparing for a launch (e.g., `release/1.2.0`). Used for final bug fixes and version bumping before merging to `main`.
+- **Pull Request Rules:** No direct commits to `main` or `development`. All changes require a PR.
+- **Code Review Requirements:** At least 1 approving review from a peer developer. CI checks must pass.
+- **Commit Message Standards:** Conventional Commits (e.g., `feat: add router restart button`, `fix: resolve null pointer in discovery`).
+- **Version Tagging:** Every merge into `main` must be accompanied by an annotated git tag matching the Semantic Version (e.g., `v1.2.0`).
+
+### 12.3 GitHub Repository Standards
+- **Repository Structure:** Clean root directory. Source code in `/lib`, tests in `/test`, CI scripts in `/.github/workflows`, documentation in `/docs`.
+- **README Standards:** Must include setup instructions, required environment variables, and architecture overview.
+- **Issue Templates:** Standardized markdown templates for Bug Reports and Feature Requests.
+- **Pull Request Templates:** Checklist verifying tests were added, documentation was updated, and code was manually verified.
+- **Security Policy:** A `SECURITY.md` file detailing how external researchers can responsibly disclose vulnerabilities.
+- **Contribution Guidelines:** A `CONTRIBUTING.md` file explaining the workflow for open-source contributors (if applicable).
+- **Changelog Management:** Automated changelog generation based on Conventional Commits using standard tooling.
+
+### 12.4 CI/CD Pipeline
+The core automation engine powered by **GitHub Actions**.
+
+*Pipeline Stages:*
+1. **Checkout:** Pulls the latest code from the repository.
+2. **Dependency Installation:** Runs `flutter pub get` and restores cached dependencies.
+3. **Static Analysis:** Runs `flutter analyze` to catch syntax errors and linting violations.
+4. **Formatting Check:** Runs `dart format --set-exit-if-changed .` to enforce consistent code style.
+5. **Unit Tests:** Executes `flutter test` (fails the build if coverage drops below 70%).
+6. **Integration Tests:** (Optional on PRs, required on Release) Runs E2E tests on a headless emulator.
+7. **Security Scan:** Scans for hardcoded secrets and known vulnerable dependencies.
+8. **Build APK/AAB:** Compiles the application payload for Android.
+9. **Generate Release Artifact:** Uploads the compiled binary to GitHub Releases or pushes it to Firebase App Distribution.
+
+### 12.5 Flutter Build Pipeline
+Handling the specifics of compiling Dart code for Android.
+
+- **Debug Build:** Unoptimized, includes hot-reload support and debugging symbols. Used only by developers locally. (`flutter build apk --debug`)
+- **Profile Build:** Optimized for performance analysis. Used to trace jank and memory leaks on physical devices. (`flutter build apk --profile`)
+- **Release Build:** Fully optimized, obfuscated (ProGuard/R8), and stripped of debug symbols. Shipped to users. (`flutter build appbundle --release`)
+- **APK Generation:** Standard format for local sideloading, internal sharing, and GitHub Releases.
+- **AAB Generation:** Android App Bundle. Required format for submission to the Google Play Store (allows Google to optimize delivery sizes per device).
+
+*Build Flavors (Environments):*
+- **Development:** Uses staging Firebase database. Distinct app icon. Can be installed alongside production.
+- **Staging:** Uses a production clone. Used for Release Candidate testing.
+- **Production:** The final build pointing to live services.
+
+### 12.6 Environment Management
+Strict separation of configurations.
+
+- **Development Environment:** Unstable. Used for daily coding. Connected to test APIs.
+- **Testing Environment (Staging):** Stable replica of production for final QA validation.
+- **Production Environment:** Live. Untouchable by developers directly.
+- **Environment Variables:** Handled via `.env` files (ignored in git) and injected at compile time using `--dart-define`.
+- **Secret Management:** CI secrets (Keystore passwords, Play Store JSON keys) are stored securely in GitHub Secrets.
+- **API Key Handling:** Never hardcoded. Passed dynamically during the CI build process.
+- **Firebase Configuration:** `google-services.json` is split per flavor and injected securely during the build.
+
+### 12.7 Release Management
+Predictable, safe deployment cycles.
+
+- **Semantic Versioning:** `MAJOR.MINOR.PATCH` (e.g., `1.2.4`)
+  - **Major (1.x.x):** Massive architectural rewrites or breaking API changes.
+  - **Minor (x.2.x):** New features (e.g., adding a new router integration).
+  - **Patch (x.x.4):** Bug fixes and performance improvements.
+- **Release Notes:** User-facing descriptions of what changed, generated from the Changelog.
+- **Rollback Strategy:** If a critical bug escapes to production, the CI pipeline is triggered on the previous Git Tag to immediately compile and submit a hotfix update to the Play Store. (Android does not support true "rollbacks", so a forward-fix with a reverted codebase is required).
+- **Hotfix Strategy:** Cut branch from `main`, fix bug, PR to `main` (bump patch version), deploy, then backport the fix to `development`.
+
+### 12.8 App Store Deployment
+The final mile to the user via the **Google Play Console**.
+
+- **Internal Testing:** Pushing builds automatically via GitHub Actions to the Play Console Internal Track for the core team (max 100 users).
+- **Closed Testing (Beta):** Releasing to a wider group of opted-in users to catch edge-case device issues.
+- **Open Testing:** (Optional) Publicly available beta track on the Play Store.
+- **Production Release:** 100% rollout to the public.
+- **Review Checklist:** Verify content ratings, update store screenshots, confirm privacy policy links, and test the exact AAB generated by CI.
+
+### 12.9 Monitoring After Release
+Deploying is only half the battle.
+
+- **Crashlytics:** Real-time monitoring of fatal and non-fatal exceptions. Stack traces are de-obfuscated automatically using uploaded mapping files.
+- **Performance Monitoring:** Tracking cold start times, HTTP request latencies, and screen rendering jank.
+- **Error Tracking:** Aggregating handled exceptions (e.g., failed router logins) to identify widespread backend issues.
+- **User Feedback:** Monitoring Play Store reviews and in-app feedback forms.
+- **Release Health Score:** A composite metric tracking the stability of a new release over the first 48 hours compared to the previous version.
+
+### 12.10 Backup & Disaster Recovery
+Preparing for the worst-case scenario.
+
+- **GitHub Backup:** The remote repository is the primary backup of the source code.
+- **Database Backup:** Users can manually export their SQLite database. (Future: Cloud sync will handle automatic encrypted backups).
+- **Configuration Backup:** Keystores, signing certificates, and CI configurations are stored securely offline by the lead maintainer.
+- **Recovery Procedure:** Documented steps to rebuild the entire pipeline and deploy an emergency update if the primary CI system goes down.
+
+### 12.11 Future DevOps Roadmap
+- **Automated AI Code Review:** Integrating LLMs into GitHub Actions to automatically comment on PRs regarding architectural violations or potential security flaws.
+- **AI Testing Agents:** Bots that automatically explore the app looking for crashes before a release.
+- **Automated Release Notes:** Using AI to translate technical commit messages into user-friendly marketing copy.
+- **Multi-platform Builds:** Expanding the CI pipeline to compile iOS (IPA) and Windows (.exe) binaries from the same Flutter codebase.
+- **Desktop Deployment:** Automating deployment to the Microsoft Store and macOS App Store.
+- **Web Deployment:** Deploying a simplified dashboard version of WiFiPulse via Firebase Hosting.
+
+---
+
+### CI/CD Architecture Diagram
+```mermaid
+graph LR
+    A[Developer Push] --> B(GitHub Repository)
+    B --> C{GitHub Actions}
+    C --> D[Run Tests & Lints]
+    C --> E[Build APK/AAB]
+    E --> F[Firebase App Distribution]
+    E --> G[Google Play Console]
+```
+
+### Build Pipeline Flow
+1. `flutter analyze`
+2. `flutter test`
+3. `flutter build appbundle --release --flavor production`
+4. Upload to Play Store Track.
+
+### Release Checklist
+- [ ] Version bumped in `pubspec.yaml`
+- [ ] CHANGELOG.md updated
+- [ ] Release branch cut and PR created
+- [ ] CI pipeline fully green
+- [ ] Manual smoke test on physical device passed
+
+### DevOps Best Practices
+- Never manually build an AAB on a local machine for production release. The CI server is the single source of truth.
+- Secrets never touch developer machines; they live only in GitHub Secrets and the local `.env` (ignored by git).
 
 ## 32. Future Roadmap
 > `[Placeholder: Outline visionary features and integrations planned beyond the initial release.]`
