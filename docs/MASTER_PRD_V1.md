@@ -43,6 +43,7 @@
 | 1.12 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 12 (DevOps & Release Engineering) |
 | 1.13 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 13 (Analytics & Telemetry) |
 | 1.14 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 14 (Monetization & Growth Strategy) |
+| 1.15 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 15 (Product Roadmap & Version Strategy) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -2369,8 +2370,180 @@ graph LR
 - Never manually build an AAB on a local machine for production release. The CI server is the single source of truth.
 - Secrets never touch developer machines; they live only in GitHub Secrets and the local `.env` (ignored by git).
 
-## 32. Future Roadmap
-> `[Placeholder: Outline visionary features and integrations planned beyond the initial release.]`
+## 32. Product Roadmap & Version Strategy (Chapter 15)
+
+### 15.1 Roadmap Philosophy
+WiFiPulse is built for the long haul. Our roadmap is designed to deliver immediate utility while methodically constructing a comprehensive network intelligence platform.
+
+- **Long-term vision:** To evolve from a diagnostic utility into an autonomous, self-healing network ecosystem.
+- **Incremental delivery:** Shipping small, polished feature sets frequently rather than massive, buggy monolithic updates.
+- **User feedback driven development:** The roadmap is flexible; user telemetry and Play Store reviews will dictate the prioritization of features within each version phase.
+- **Stability before expansion:** A new Version Generation (e.g., moving from V1 to V2) will not commence until the current generation achieves a 99.9% crash-free rate.
+- **Scalable feature growth:** Features are designed to scale from a single apartment router up to a multi-location enterprise network without requiring an app rewrite.
+
+### 15.2 Version Strategy Overview
+The evolution of WiFiPulse is categorized into 5 distinct generations:
+
+- **V1 Foundation:** Establish the core diagnostic tools and earn user trust through a flawless UX.
+- **V2 Intelligence:** Introduce the AI Assistant to interpret the data gathered in V1.
+- **V3 Automation:** Allow the app and AI to take action automatically to fix the network without human intervention.
+- **V4 Ecosystem:** Expand beyond the Android phone into wearables, auto, and smart home hubs.
+- **V5 Enterprise Platform:** Scale the consumer architecture to support B2B managed service providers.
+
+### 15.3 WiFiPulse V1 — Foundation Release
+*Status: Current Development Phase*
+
+The goal of V1 is to replace all legacy network scanners (like Fing) on the user's phone by offering superior design and faster performance.
+
+- **Must Have (MVP):**
+  - Authentication (Firebase)
+  - Premium UI (Material 3)
+  - Dashboard (Network overview)
+  - Router Detection (Gateway IP & Vendor identification)
+  - Device Discovery (Subnet scanning & OUI resolution)
+  - Speed Testing (Ping, Up/Down)
+  - Settings (Theme, account management)
+  - Play Store Release (Internal, Beta, Production)
+- **Should Have (Fast Follows):**
+  - Basic Security (Detecting WEP/Open networks)
+  - Basic AI Insights (Pre-canned tips for slow speeds)
+  - Notifications (Local alerts for scan completion)
+  - Reports (Simple PDF export of current network state)
+- **Future Deferred Features:**
+  - Automated router reboots, cloud syncing.
+
+### 15.4 WiFiPulse V2 — AI Intelligence Release
+*Status: Planning*
+
+Shifting from "What is happening?" to "Why is it happening and what should I do?"
+
+- **Advanced AI Assistant:** A chat interface allowing users to query their network data ("Why is my gaming PC lagging tonight?").
+- **Network Prediction Engine:** Forecasting when the internet is likely to slow down based on historical neighborhood ISP data.
+- **Usage Forecasting:** Predicting if the user will exceed their ISP data cap.
+- **Device Behavior Learning:** The AI learns that the "Samsung TV" only streams at night, flagging daytime streaming as anomalous.
+- **Smart Recommendations:** Suggesting specific router settings changes (e.g., "Change 2.4GHz to Channel 11").
+- **Network Optimization:** AI-generated action plans for improving Wi-Fi coverage based on device signal strengths.
+- **AI Troubleshooting:** A guided, conversational wizard to diagnose "No Internet" scenarios.
+
+### 15.5 WiFiPulse V3 — Automation Release
+*Status: Concept*
+
+Closing the loop. The app stops just advising and starts acting.
+
+- **Automatic Network Fixes:** With user permission, the app automatically logs into the router and changes the Wi-Fi channel when congestion is detected.
+- **Smart Router Actions:** Auto-rebooting the router at 3 AM if memory leaks are detected.
+- **Scheduled Scans:** Running full network sweeps every 12 hours in the background.
+- **Background Monitoring:** Continuously pinging the gateway to detect micro-outages.
+- **Smart Alerts:** Push notification: "Your kids' iPad connected past bedtime. Block access?"
+- **Auto Optimization:** Dynamically adjusting Quality of Service (QoS) rules to prioritize a work laptop during a Zoom call.
+- **Home Automation Integration:** Flashing Phillips Hue lights red if the internet goes down.
+
+### 15.6 WiFiPulse V4 — Ecosystem Release
+*Status: Concept*
+
+WiFiPulse everywhere.
+
+- **Smart Home Integration:** Native plugins for Home Assistant, SmartThings, and Apple HomeKit.
+- **Wear OS Application:** Checking network status and rebooting the router from a smartwatch.
+- **Android Auto Support:** Receiving network outage alerts on the car dashboard before arriving home.
+- **Desktop Dashboard:** A native Windows/macOS app for continuous monitoring while working.
+- **Web Dashboard:** A responsive web portal for managing the home network from any browser.
+- **Family Network Management:** Linking multiple Google accounts so a family can share administrative access.
+
+### 15.7 WiFiPulse V5 — Enterprise Platform
+*Status: Vision*
+
+Monetizing the platform for B2B.
+
+- **Enterprise Dashboard:** A "single pane of glass" managing thousands of routers across different clients.
+- **Multiple Locations:** Grouping networks by physical address (e.g., "Cafe Branch 1", "Office Branch 2").
+- **Role Management:** Admin, IT Support (Read/Write), and Auditor (Read-Only) roles.
+- **Team Accounts:** Single Sign-On (SSO) integration for corporate environments.
+- **Network Policies:** Enforcing company-wide rules (e.g., "No IoT devices on the main subnet").
+- **Compliance Reports:** Automated monthly PDF generation proving network uptime and security for SLAs.
+- **Enterprise API:** Allowing MSPs to pull WiFiPulse telemetry into their existing IT management software (e.g., ConnectWise).
+- **SaaS Platform:** Transitioning to a high-ticket, per-seat licensing model.
+
+### 15.8 Feature Prioritization Framework
+How we decide what to build next.
+
+- **MoSCoW Method:** Every feature in the backlog is tagged as Must have, Should have, Could have, or Won't have.
+- **Impact vs Effort:** A matrix plotting user value against engineering complexity. We prioritize "Quick Wins" (High Impact, Low Effort).
+- **User Value Score (1-10):** How much this feature directly improves the core mission (fixing Wi-Fi).
+- **Technical Complexity (1-10):** How difficult it is to build and maintain.
+- **Business Priority:** Does this feature drive Premium subscriptions? (e.g., PDF Exports have high business priority).
+
+### 15.9 Release Timeline Strategy
+The cadence of getting code to users.
+
+- **Alpha:** Internal builds triggered on every merge to `development`. Used for dogfooding by the core team.
+- **Beta (Internal Testing):** Weekly builds distributed via Firebase App Distribution to trusted testers and friends/family.
+- **Public Testing (Closed Beta):** A Google Play Store track limited to 1,000 early adopters. Used for Release Candidate (RC) validation.
+- **Production:** A staged rollout (10% -> 50% -> 100%) over 7 days via the Play Store to minimize the blast radius of unforeseen bugs.
+- **Maintenance Releases:** Off-cycle patch updates solely for fixing crashes or critical UI bugs.
+
+### 15.10 Deprecation Strategy
+Keeping the codebase clean.
+
+- **Old Feature Removal:** Features with <2% adoption over 90 days are flagged for removal to reduce bloat.
+- **API Version Retirement:** When migrating to a new backend API, the old v1 API is supported for exactly 6 months before being shut down.
+- **Backward Compatibility:** SQLite database schemas must always include migration scripts; dropping tables is highly restricted.
+- **Migration Plans:** When a major feature changes (e.g., moving from local AI to cloud AI), users receive a 30-day in-app banner explaining the transition and their privacy options.
+
+### 15.11 Long Term Vision
+The ultimate endgame.
+
+- **AI Network Engineer:** The app completely replaces Tier 1 and Tier 2 ISP tech support.
+- **Self Healing WiFi:** The network anticipates issues and reconfigures itself before the user ever notices a slowdown.
+- **Smart Home Brain:** WiFiPulse becomes the central nervous system of the smart home, not just monitoring the network, but orchestrating how devices interact.
+- **Personal Network Assistant:** A voice-activated entity (via Google Assistant integration) that manages digital life connectivity.
+- **Enterprise Network Intelligence Platform:** The foundational software layer that powers the next generation of small business IT infrastructure globally.
+
+---
+
+### 5-Year Product Roadmap
+```mermaid
+gantt
+    title WiFiPulse 5-Year Evolution
+    dateFormat  YYYY-MM
+    section V1 Foundation
+    Core Features      :done,    des1, 2026-06, 6m
+    App Store Launch   :active,  des2, 2026-12, 3m
+    section V2 Intelligence
+    AI Assistant       :         des3, 2027-03, 6m
+    Predictive Analytics:         des4, 2027-09, 6m
+    section V3 Automation
+    Auto-Fixes         :         des5, 2028-03, 9m
+    Smart Alerts       :         des6, 2028-12, 6m
+    section V4 Ecosystem
+    Wearables/Web      :         des7, 2029-06, 12m
+    section V5 Enterprise
+    SaaS Dashboard     :         des8, 2030-06, 12m
+```
+
+### Version Comparison Table
+| Feature Category | V1 Foundation | V2 Intelligence | V3 Automation |
+| :--- | :--- | :--- | :--- |
+| **Diagnostics** | Manual Scan | Predictive Scan | Background Scan |
+| **AI** | Pre-canned Tips | Conversational Chat | Autonomous Decisions |
+| **Actions** | Manual Reboot | AI Recommended Fix | Auto-Applied Fix |
+| **Platform** | Android Phone | Android Phone | Phone + Smart Home |
+
+### Feature Timeline (Short-Term)
+- **Q3 2026:** Finalize UI/UX, Complete Core Scanning Engine.
+- **Q4 2026:** Integrate Firebase Auth, Launch Closed Beta.
+- **Q1 2027:** Implement RevenueCat, Launch V1 to Production.
+- **Q2 2027:** Begin Gemini LLM integration for V2.
+
+### Release Checklist
+- [ ] Has the V1 MVP criteria been strictly met?
+- [ ] Are all deferred features properly documented in the backlog?
+- [ ] Is the Beta testing group populated with at least 50 diverse devices?
+- [ ] Is the staged rollout strategy configured in the Play Console?
+
+### Future Innovation Ideas
+- **AR Network Mapping:** Using the phone's camera (ARCore) to physically map Wi-Fi dead zones in 3D space by walking around the house.
+- **Mesh Node Optimization:** AI visually guiding the user on exactly where to place a Wi-Fi extender for optimal backhaul connection.
 
 ## 33. Risks
 > `[Placeholder: Identify potential technical, market, or execution risks and mitigation strategies.]`
