@@ -44,6 +44,7 @@
 | 1.13 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 13 (Analytics & Telemetry) |
 | 1.14 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 14 (Monetization & Growth Strategy) |
 | 1.15 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 15 (Product Roadmap & Version Strategy) |
+| 1.16 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 16 (Enterprise & Scalability) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -2543,16 +2544,177 @@ gantt
 
 ### Future Innovation Ideas
 - **AR Network Mapping:** Using the phone's camera (ARCore) to physically map Wi-Fi dead zones in 3D space by walking around the house.
-- **Mesh Node Optimization:** AI visually guiding the user on exactly where to place a Wi-Fi extender for optimal backhaul connection.
 
-## 33. Risks
+## 33. Enterprise Features, Scalability & Expansion (Chapter 16)
+
+### 16.1 Enterprise Vision
+WiFiPulse is designed to evolve from a single-player consumer utility into a multiplayer, B2B network intelligence platform.
+
+- **WiFiPulse as a future network intelligence platform:** Moving beyond local diagnostics to a centralized, cloud-managed system.
+- **Consumer to business evolution:** Using our flawless consumer UX to win over IT professionals who are tired of clunky legacy enterprise tools.
+- **Multi-location management:** Enabling Managed Service Providers (MSPs) to monitor hundreds of client networks from a single pane of glass.
+- **Enterprise scalability goals:** Architecting the backend to securely handle millions of simultaneous router heartbeats and AI insight generation requests.
+
+### 16.2 Enterprise Dashboard
+The command center for IT teams (Available via Web Browser).
+
+- **Web Admin Dashboard:** A responsive React/Next.js portal providing a bird's-eye view of all managed networks.
+- **Organization Management:** Creating isolated tenant spaces for different business clients.
+- **Multiple Networks:** Grouping physical routers into logical networks (e.g., "Guest WiFi", "Point of Sale WiFi").
+- **Branch Locations:** Mapping networks to physical addresses for rapid outage dispatching.
+- **Admin Console:** Centralized billing, seat management, and white-labeling configurations.
+- **Analytics Center:** Aggregated SLA reports, uptime metrics, and bandwidth usage trends across the fleet.
+- **Security Center:** A unified threat feed showing blocked intrusions and vulnerable devices across all clients.
+
+### 16.3 User Roles & Access Control
+Strict Role-Based Access Control (RBAC) for team environments.
+
+- **Owner:**
+  - *Permissions:* Full access to billing, organization deletion, and owner reassignment.
+  - *Restrictions:* None.
+  - *Access Level:* Global.
+- **Administrator:**
+  - *Permissions:* Manage team members, create networks, modify global router policies.
+  - *Restrictions:* Cannot access billing or delete the organization.
+  - *Access Level:* Global.
+- **Network Manager:**
+  - *Permissions:* Reboot routers, kick devices, view analytics for assigned locations.
+  - *Restrictions:* Cannot invite users or view global settings.
+  - *Access Level:* Location-specific.
+- **Viewer (Auditor):**
+  - *Permissions:* View dashboards and export SLA reports.
+  - *Restrictions:* Read-only. Cannot modify any settings or trigger reboots.
+  - *Access Level:* Organization or Location-specific.
+- **Guest:**
+  - *Permissions:* Temporary access to view a specific network's health.
+  - *Security Rules:* Access auto-expires after 24 hours.
+
+### 16.4 Multi Network Management
+Scaling visibility for MSPs.
+
+- **Multiple Routers:** Supporting mesh environments and multi-WAN setups natively.
+- **Multiple Locations:** Geographical mapping of network health (Green/Yellow/Red status pins on a map).
+- **Network Groups:** Categorizing clients (e.g., "Retail Stores", "Corporate Offices") for bulk policy application.
+- **Remote Monitoring:** Cloud-brokered connections allowing IT to securely access the router admin panel without setting up complex VPNs.
+- **Network Comparison:** Identifying why Branch A's internet is consistently slower than Branch B's despite identical hardware.
+- **Performance Benchmarking:** Comparing a client's network speed against the regional average for their ISP.
+
+### 16.5 Enterprise Security Features
+Enterprise-grade protection scaled down for small businesses.
+
+- **Advanced Threat Detection:** Real-time scanning for known malware signatures (via third-party integrations).
+- **Intrusion Detection:** Alerting when a device attempts to port-scan the internal network.
+- **Suspicious Device Analysis:** The AI flags devices that spoof MAC addresses or exhibit abnormal data egress.
+- **Security Reports:** Weekly automated emails detailing threats neutralized and firmware updates required.
+- **Compliance Dashboard:** Checking if the network meets basic PCI-DSS or HIPAA networking requirements (e.g., WPA3 enforced, Guest network isolated).
+- **Policy Enforcement:** "Block all Smart TVs from accessing the internet during business hours."
+
+### 16.6 Team Collaboration
+Making IT support a team sport.
+
+- **Shared Access:** Removing the need to share the single "admin/password" sticky note for a router.
+- **Team Invitations:** Secure email-based onboarding with mandatory 2FA.
+- **Activity Logs:** An immutable ledger of who did what (e.g., "Alice rebooted the Main Router at 2:00 PM").
+- **Admin Actions:** Granular approval workflows for destructive actions (e.g., factory resetting a remote router).
+- **Audit History:** Retaining all team actions for 1 year for compliance purposes.
+- **Reports Sharing:** Generating secure, time-limited links for clients to view their network health.
+
+### 16.7 Smart Home Expansion
+WiFiPulse as the brain of the automated home/office.
+
+- **Matter Integration:** Natively discovering and diagnosing Thread and Matter devices.
+- **SmartThings / Google Home / Alexa:** Two-way sync; pulling device names from hubs and pushing network offline alerts to smart speakers.
+- **IoT Device Intelligence:** Identifying vulnerable IoT firmware and providing step-by-step update instructions.
+- **Automation Rules:** "If the security camera drops offline, automatically reboot the PoE switch."
+
+### 16.8 Platform Expansion
+Moving beyond Android.
+
+- **Android / iOS:** Feature parity across mobile platforms.
+- **Windows / macOS:** Native desktop applications residing in the system tray for continuous background monitoring.
+- **Linux:** A headless CLI tool designed to run on a Raspberry Pi as a permanent network probe.
+- **Web Dashboard:** The primary interface for Enterprise users.
+- **Browser Extensions:** A lightweight Chrome/Edge extension that warns the user if their current Wi-Fi connection is insecure before they log into a bank.
+
+### 16.9 Developer Platform
+Opening the ecosystem.
+
+- **Public APIs:** RESTful endpoints for querying network status and AI insights.
+- **SDK:** A lightweight Flutter/Dart SDK allowing other developers to embed WiFiPulse scanning into their apps.
+- **Developer Portal:** API key generation, usage tracking, and documentation.
+- **Plugin Marketplace:** Allowing community developers to write custom integration scripts for obscure router brands.
+- **Third-party Integrations:** Webhooks for PagerDuty, Slack, and Microsoft Teams to alert IT staff of outages.
+
+### 16.10 AI Network Engineer Future
+The endgame of network automation.
+
+- **Autonomous Troubleshooting:** The AI detects an issue, identifies the root cause, and applies the fix without waking the user.
+- **Self-Healing WiFi:** Dynamically shifting channels and re-routing mesh backhaul traffic to route around interference (e.g., a running microwave).
+- **Automatic Optimization:** The AI negotiates QoS rules in real-time, prioritizing a sudden Zoom call over a background Steam download.
+- **AI Router Assistant:** A voice-integrated bot that answers questions like "Why is the internet slow?" with plain English explanations rather than technical jargon.
+- **Predictive Maintenance:** "Your ISP typically drops connection at 2 AM on Tuesdays for maintenance; I have paused your cloud backups during this window."
+
+### 16.11 Scalability Strategy
+Ensuring the cloud backend doesn't melt.
+
+- **Millions of users:** Architecting for scale from Day 1 using stateless microservices.
+- **Cloud architecture:** Utilizing Google Cloud Platform (Cloud Run, Pub/Sub) for elastic scaling based on traffic spikes.
+- **Database scaling:** Moving from single-node PostgreSQL to horizontally distributed Spanner or BigTable for telemetry ingestion.
+- **Global availability:** Multi-region deployments to ensure low-latency API responses and disaster recovery.
+- **Performance targets:** 
+  - API response time < 200ms globally.
+  - Real-time WebSocket event delivery < 50ms.
+  - 99.99% Cloud Uptime SLA for Enterprise users.
+
+---
+
+### Enterprise Architecture Diagram
+```mermaid
+graph TD
+    A[WiFiPulse Android App] -->|Local Polling| B(Small Business Router)
+    A -->|Telemetry & Heartbeats| C[GCP Load Balancer]
+    C --> D[Ingestion Microservice]
+    D --> E[(BigTable Telemetry Store)]
+    D --> F[AI Processing Queue]
+    F --> G[Gemini LLM Engine]
+    H[Enterprise Web Dashboard] -->|GraphQL| I[API Gateway]
+    I --> J[(Cloud SQL - User/Org Data)]
+    I --> E
+```
+
+### Role Permission Matrix
+| Action | Owner | Admin | Manager | Viewer |
+| :--- | :--- | :--- | :--- | :--- |
+| Delete Organization | ✅ | ❌ | ❌ | ❌ |
+| Invite Users | ✅ | ✅ | ❌ | ❌ |
+| Change Global Policy | ✅ | ✅ | ❌ | ❌ |
+| Reboot Router | ✅ | ✅ | ✅ | ❌ |
+| View Analytics | ✅ | ✅ | ✅ | ✅ |
+
+### Future Platform Roadmap
+1. **Year 1:** Android exclusivity (Consumer focus).
+2. **Year 2:** iOS and Web Dashboard launch.
+3. **Year 3:** Enterprise SaaS launch and API access.
+4. **Year 4:** Native Desktop apps (Windows/macOS) and Linux CLI.
+
+### Scalability Checklist
+- [ ] Are background network probes aggressively rate-limited?
+- [ ] Is user data sharded by geographic region?
+- [ ] Are AI requests cached globally to prevent duplicate LLM processing?
+- [ ] Is the database schema designed to support multi-tenant organizations?
+
+### Innovation Ideas
+- **Mesh-Network Crowdsourcing:** Allowing nearby WiFiPulse users to securely share internet access during regional outages (e.g., natural disasters).
+- **Hardware Appliance:** Selling a dedicated "WiFiPulse Probe" (a small dongle) that plugs into enterprise switches for 24/7 monitoring independent of a phone.
+
+## 34. Risks
 > `[Placeholder: Identify potential technical, market, or execution risks and mitigation strategies.]`
 
-## 34. Assumptions
+## 35. Assumptions
 > `[Placeholder: List assumptions made during the PRD creation that require validation.]`
 
-## 35. Open Questions
+## 36. Open Questions
 > `[Placeholder: List any unresolved product decisions that need stakeholder alignment.]`
 
-## 36. Glossary
+## 37. Glossary
 > `[Placeholder: Define project-specific terms, acronyms, and technical jargon.]`
