@@ -41,6 +41,7 @@
 | 1.10 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 10 (Security & Privacy) |
 | 1.11 | 2026-06-30 | AI Assistant | Wrote PRD Chapter 11 (Testing & Quality Assurance) |
 | 1.12 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 12 (DevOps & Release Engineering) |
+| 1.13 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 13 (Analytics & Telemetry) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -1882,8 +1883,163 @@ Testing in non-ideal real-world conditions.
 ### Future Improvements
 - Integrating automated security scanning (SAST/DAST) directly into the CI pipeline to catch vulnerabilities before they are merged.
 
-## 28. Analytics
-> `[Placeholder: Define what user behaviors, errors, and system metrics will be tracked.]`
+## 28. Analytics & Telemetry (Chapter 13)
+
+### 13.1 Analytics Philosophy
+WiFiPulse utilizes telemetry to improve the product without compromising user trust.
+
+- **Privacy-first analytics:** Telemetry is opt-in (or prominently disclosed), and stripped of Personally Identifiable Information (PII) before transmission.
+- **User value tracking:** We measure success by how quickly a user solves their network problem, not just by how long they stay in the app.
+- **Performance intelligence:** Hardware metrics (battery, memory) are tracked to ensure the app remains lightweight on low-end devices.
+- **Network intelligence:** Aggregated, anonymized network data helps train our AI models for future releases.
+- **Local-first telemetry:** Sensitive data (like full MAC addresses) is analyzed locally and only aggregated hashes or categories are sent to the cloud.
+
+### 13.2 Product Analytics
+Tracking core user interactions to guide product decisions (Powered by Firebase Analytics).
+
+*Core Events:*
+- **App Open:** Fired on launch. Purpose: Track DAU. Parameters: `source` (organic, notification deep-link).
+- **User Registration:** Fired on sign-up. Purpose: Track funnel conversion. Parameters: `method` (email, google).
+- **Router Connected:** Fired on successful admin login. Purpose: Track hardware compatibility. Parameters: `vendor_hash`, `success_duration`.
+- **Device Scan Started:** Fired when user taps "Scan". Purpose: Track core feature usage.
+- **Device Detected:** Fired internally per device found. Purpose: Track average network density. Parameters: `device_type_category` (e.g., IoT, Mobile, PC).
+- **Speed Test Completed:** Fired upon test end. Purpose: Track ISP performance trends. Parameters: `ping_ms`, `download_mbps`, `upload_mbps` (Note: IP address is NOT logged).
+- **Security Scan Completed:** Fired after vulnerability check. Purpose: Track common threats. Parameters: `threats_found_count`.
+- **AI Insight Generated:** Fired when the LLM returns a response. Purpose: Track AI engagement. Parameters: `prompt_category`.
+- **Alert Viewed:** Fired when a push notification is opened. Purpose: Track notification effectiveness. Parameters: `alert_type`.
+- **Feature Usage:** Fired on generic button taps (e.g., Export PDF). Purpose: Identify unused features for deprecation. Parameters: `feature_name`.
+
+*Rules:*
+- **Retention Rules:** Event data is retained in Google Analytics 4 (GA4) for a maximum of 14 months.
+- **Privacy Rules:** No precise location data, SSIDs, or raw MAC addresses are attached to these events.
+
+### 13.3 User Behavior Analytics
+Understanding how the app is utilized.
+
+- **User Journey Tracking:** Identifying where users drop off during the router onboarding flow.
+- **Feature Adoption:** Measuring what percentage of users who scan their network also run a speed test in the same session.
+- **Screen Engagement:** Tracking average time spent on the "Network Map" vs the "Security Dashboard".
+- **Session Duration:** Differentiating between "quick check" sessions (<30s) and "troubleshooting" sessions (>3m).
+- **Retention Analysis:** Tracking D1, D7, and D30 retention cohorts to measure long-term value.
+- **User Segmentation:** Grouping users by behavior (e.g., "Power Users" who check daily vs "Casual Users" who check only when the internet breaks).
+
+### 13.4 Network Analytics Engine
+Aggregating anonymized data to understand the global state of home networking.
+
+- **WiFi Speed History:** Tracking if average speeds are improving over time.
+- **Latency Tracking:** Identifying periods of systemic high latency (e.g., regional ISP outages).
+- **Signal Strength:** Correlating poor RSSI (-80dBm) with specific router models.
+- **Bandwidth Usage:** Tracking average daily data consumption per household.
+- **Device Usage Patterns:** Identifying the most common IoT devices globally (e.g., Smart TVs vs Smart Bulbs).
+- **Router Health Trends:** Tracking how often routers require reboots.
+- **Peak Usage Hours:** Identifying when home networks are under the most stress (e.g., 8 PM - 10 PM).
+- **Network Reliability Score:** A calculated metric (0-100) determining the overall stability of a user's connection.
+
+### 13.5 AI Analytics
+Measuring the effectiveness of the intelligence layer.
+
+- **AI Recommendation Accuracy:** Tracking if a user actually clicks the recommended action (e.g., "Change Channel").
+- **Prediction Success Rate:** If the AI predicts an outage, tracking if the outage actually occurred.
+- **False Positive Rate:** Tracking how often the Security Engine flags a benign device as a threat.
+- **Insight Quality Score:** A thumbs-up/thumbs-down button on AI insights.
+- **User Feedback Loop:** Allowing users to submit corrections to the AI ("No, this is not a Smart Fridge").
+- **AI Improvement Pipeline:** High-quality, anonymized user corrections are fed back into the cloud staging environment to fine-tune future models.
+
+### 13.6 Performance Monitoring
+Ensuring the app remains buttery smooth (Powered by Firebase Performance Monitoring).
+
+- **App Startup Time:** Time to first interactive frame.
+- **Frame Drops:** Monitoring the percentage of frames taking longer than 16ms to render (Jank).
+- **Memory Usage:** Tracking RAM consumption during large network scans.
+- **CPU Usage:** Ensuring background polling doesn't peg the CPU.
+- **Battery Impact:** Monitoring wake locks to prevent battery drain.
+- **Background Task Performance:** Tracking the success rate and execution time of scheduled `WorkManager` jobs.
+- **Database Query Speed:** Monitoring the latency of complex SQLite `JOIN` operations.
+
+### 13.7 Crash & Error Monitoring
+Identifying and triaging stability issues (Powered by Firebase Crashlytics).
+
+- **Firebase Crashlytics:** The primary ingress for all fatal exceptions (Native Java/Swift and Dart).
+- **Exception Handling:** `try/catch` blocks wrap all critical paths. Non-fatal exceptions (e.g., failed API calls) are logged to Crashlytics as "Non-Fatals".
+- **Error Classification:** Grouping similar stack traces to identify the root cause.
+- **Severity Levels:** 
+  - *Fatal:* App crashed.
+  - *Error:* Operation failed, UI recovered.
+  - *Warning:* Unexpected state, operation succeeded.
+- **Crash Reports:** Includes device model, OS version, free RAM, and a breadcrumb trail of the last 10 UI interactions.
+- **Debug Information Rules:** Breadcrumbs NEVER include user input strings (e.g., passwords or search queries).
+
+### 13.8 Privacy & Data Governance
+Strict rules governing what leaves the device.
+
+- **No WiFi Password Tracking:** The WPA2/3 network password is never collected or logged.
+- **No Personal Data Collection:** Names, emails (unless explicitly used for account login), and precise GPS coordinates are blocked at the SDK level.
+- **MAC Address Protection:** Full MAC addresses are hashed locally. Only the OUI (the first 3 bytes identifying the manufacturer) is transmitted for analytics.
+- **Data Anonymization:** A unique, rotating Installation UUID is used instead of hardware identifiers (IMEI/Android ID).
+- **User Consent Management:** Explicit consent dialog required on the first launch for EU (GDPR) and California (CCPA) users.
+- **Analytics Opt-Out:** A master toggle in Settings completely disables Firebase Analytics and Crashlytics initialization.
+
+### 13.9 Dashboards
+Internal tools for the product team (Built via Looker Studio / Firebase Console).
+
+- **Developer Dashboard:** Tracks Crash-free sessions, API latency, and database migration success rates.
+- **Network Health Dashboard:** Aggregates global latency and bandwidth trends.
+- **AI Performance Dashboard:** Tracks LLM API costs, token usage, and Insight Quality Scores.
+- **Business Dashboard:** Tracks DAU, MAU, retention cohorts, and conversion rates.
+- **Security Dashboard:** Tracks the most common vulnerabilities found in the wild.
+
+### 13.10 Metrics & KPIs
+The core numbers defining the product's success.
+
+- **Daily Active Users (DAU):** Target: >10,000 within 6 months.
+- **Monthly Active Users (MAU):** Target: >50,000 within 6 months.
+- **Retention (D1, D7, D30):** Target D30 > 15%.
+- **Crash-Free Sessions:** Target: 99.9%.
+- **Network Scan Success Rate:** Target: 95% of scans complete without timeout.
+- **AI Accuracy:** Target: >80% positive feedback on insights.
+- **App Performance Score:** Composite score of startup time and frame render times.
+
+### 13.11 Future Analytics Roadmap
+- **Predictive Analytics:** Forecasting user churn based on app usage patterns.
+- **On-device AI Analytics:** Moving LLM token processing entirely to the local device to completely eliminate cloud API costs and privacy concerns.
+- **Federated Learning:** Training ML models locally on the user's phone and securely aggregating the *model updates* in the cloud, rather than the raw data.
+- **Smart Recommendations:** Using collaborative filtering to suggest router settings based on what fixed similar issues for other users.
+- **Enterprise Reporting:** B2B features allowing IT admins to view analytics for a fleet of remote worker routers.
+
+---
+
+### Analytics Architecture Diagram
+```mermaid
+graph TD
+    A[Flutter App] --> B(Local SQLite DB)
+    A --> C{Consent Manager}
+    C -->|Opt-in| D[Firebase Analytics SDK]
+    C -->|Opt-in| E[Crashlytics SDK]
+    C -->|Opt-in| F[Performance Monitoring]
+    D --> G(Google Analytics 4)
+    E --> H(Firebase Console)
+    F --> H
+    G --> I[Looker Studio Dashboards]
+    B -->|Anonymized Aggregation| J[Future Cloud Backend]
+```
+
+### Event Tracking Table
+| Event Name | Trigger | Priority | Contains PII? |
+| :--- | :--- | :--- | :--- |
+| `app_open` | App launched | High | No |
+| `scan_complete` | Subnet scan finishes | High | No (MACs hashed) |
+| `speed_test` | Test concludes | Med | No |
+| `ai_insight` | User views AI card | Med | No |
+| `auth_success`| Router login works | High | No |
+
+### Privacy Checklist
+- [ ] Is Crashlytics disabled in debug mode?
+- [ ] Are SSIDs stripped from all non-fatal error logs?
+- [ ] Is the GDPR consent dialog firing correctly in the EU?
+- [ ] Does the "Opt-Out" toggle immediately stop SDK tracking?
+
+### Future Improvements
+- Implementing a lightweight, self-hosted analytics solution (like PostHog or Plausible) to replace Firebase for users seeking maximum privacy independence.
 
 ## 29. Accessibility
 > `[Placeholder: Outline ADA compliance goals, screen reader support, and contrast requirements.]`
