@@ -1,33 +1,33 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../domain/entities/dashboard_summary_entity.dart';
+import '../../domain/entities/dashboard_entities.dart';
 import '../../domain/usecases/get_dashboard_summary_usecase.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../../core/di/repository_providers.dart';
 
 part 'dashboard_provider.g.dart';
 
 @riverpod
-GetDashboardSummaryUseCase getDashboardSummaryUseCase(GetDashboardSummaryUseCaseRef ref) {
-  return GetDashboardSummaryUseCase(ref.watch(dashboardRepositoryProvider));
-}
-
-@riverpod
 class DashboardController extends _$DashboardController {
   @override
-  FutureOr<DashboardSummaryEntity> build() async {
-    final useCase = ref.watch(getDashboardSummaryUseCaseProvider);
-    final user = ref.watch(authControllerProvider).valueOrNull;
-    final userId = user?.id ?? 'guest';
+  FutureOr<DashboardStatus> build() async {
+    return _fetchStatus();
+  }
 
-    final result = await useCase.execute(userId);
+  Future<DashboardStatus> _fetchStatus() async {
+    final useCase = ref.watch(getDashboardSummaryUseCaseProvider);
+    final result = await useCase.execute();
+    
     return result.fold(
-      (error) => throw error,
-      (summary) => summary,
+      (failure) => throw Exception(failure.message),
+      (status) => status,
     );
   }
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    ref.invalidateSelf();
+    try {
+      final status = await _fetchStatus();
+      state = AsyncValue.data(status);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
   }
 }

@@ -20,8 +20,6 @@ final authRepositoryProvider = Provider<AuthRepository>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef AuthRepositoryRef = ProviderRef<AuthRepository>;
 String _$getCurrentUserUseCaseHash() =>
     r'9612d3c2ee7750502fbee5f651e7f49b9d9dd4ed';
@@ -38,8 +36,6 @@ final getCurrentUserUseCaseProvider = Provider<GetCurrentUserUseCase>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef GetCurrentUserUseCaseRef = ProviderRef<GetCurrentUserUseCase>;
 String _$loginGuestUseCaseHash() => r'a96265be5c8978c304dad18ad0c2029809b76db0';
 
@@ -55,8 +51,6 @@ final loginGuestUseCaseProvider = Provider<LoginGuestUseCase>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef LoginGuestUseCaseRef = ProviderRef<LoginGuestUseCase>;
 String _$loginWithEmailUseCaseHash() =>
     r'7fc7c8afab3f72c768e96de4e1c4ad8aeffa70ea';
@@ -73,8 +67,6 @@ final loginWithEmailUseCaseProvider = Provider<LoginWithEmailUseCase>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef LoginWithEmailUseCaseRef = ProviderRef<LoginWithEmailUseCase>;
 String _$loginWithGoogleUseCaseHash() =>
     r'8f5c57b90262500b33a022b86b5d029738cd53a5';
@@ -92,8 +84,6 @@ final loginWithGoogleUseCaseProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef LoginWithGoogleUseCaseRef = ProviderRef<LoginWithGoogleUseCase>;
 String _$registerUseCaseHash() => r'9d3ca8182026bd9171e8b5cd91eea8351b07ab54';
 
@@ -109,8 +99,6 @@ final registerUseCaseProvider = Provider<RegisterUseCase>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef RegisterUseCaseRef = ProviderRef<RegisterUseCase>;
 String _$logoutUseCaseHash() => r'10c24a2ac92f177a4f38f9a95f8af64556c38ec5';
 
@@ -126,8 +114,6 @@ final logoutUseCaseProvider = Provider<LogoutUseCase>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef LogoutUseCaseRef = ProviderRef<LogoutUseCase>;
 String _$completeOnboardingUseCaseHash() =>
     r'44d4f43389c8054092313444d86980aaeb59e2d1';
@@ -145,8 +131,6 @@ final completeOnboardingUseCaseProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef CompleteOnboardingUseCaseRef = ProviderRef<CompleteOnboardingUseCase>;
 String _$syncRepositoryHash() => r'dc9f2282378cfc3598dc9b60a9939b96b29790b9';
 
@@ -162,27 +146,7 @@ final syncRepositoryProvider = Provider<SyncRepository>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef SyncRepositoryRef = ProviderRef<SyncRepository>;
-String _$connectivityServiceHash() =>
-    r'c38b1485d55a179f01c6d0bc150704296daf2d01';
-
-/// See also [connectivityService].
-@ProviderFor(connectivityService)
-final connectivityServiceProvider = Provider<IConnectivityService>.internal(
-  connectivityService,
-  name: r'connectivityServiceProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$connectivityServiceHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef ConnectivityServiceRef = ProviderRef<IConnectivityService>;
 String _$networkRepositoryHash() => r'7375530791cf34283f4a1fa436fc9616f884a747';
 
 /// See also [networkRepository].
@@ -197,8 +161,6 @@ final networkRepositoryProvider = Provider<NetworkRepository>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef NetworkRepositoryRef = ProviderRef<NetworkRepository>;
 String _$deviceDiscoveryRepositoryHash() =>
     r'fa0d5f92d0bd77459d2814abd90640c8486979f6';
@@ -216,8 +178,6 @@ final deviceDiscoveryRepositoryProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef DeviceDiscoveryRepositoryRef = ProviderRef<DeviceDiscoveryRepository>;
 String _$routerControlRepositoryHash() =>
     r'55b0fd4cd341c190abf2db1329a02a0fdf7985fd';
@@ -235,8 +195,6 @@ final routerControlRepositoryProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef RouterControlRepositoryRef = ProviderRef<RouterControlRepository>;
 String _$deviceRepositoryHash() => r'a614397625effedbc8265f7e7b6896863316d957';
 
@@ -252,8 +210,6 @@ final deviceRepositoryProvider = Provider<DeviceRepository>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef DeviceRepositoryRef = ProviderRef<DeviceRepository>;
 String _$securityRepositoryHash() =>
     r'ed39ce2abfcdb480215071fc79cbae40b39ca186';
@@ -270,8 +226,6 @@ final securityRepositoryProvider = Provider<SecurityRepository>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef SecurityRepositoryRef = ProviderRef<SecurityRepository>;
 String _$insightRepositoryHash() => r'2fd80969de42f6c101f7a35eac97a6a08231a934';
 
@@ -287,8 +241,6 @@ final insightRepositoryProvider = Provider<InsightRepository>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef InsightRepositoryRef = ProviderRef<InsightRepository>;
 String _$usageRepositoryHash() => r'b76bbd1b92a0782920fd65ec0f50c1439abed6ab';
 
@@ -304,11 +256,9 @@ final usageRepositoryProvider = Provider<UsageRepository>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef UsageRepositoryRef = ProviderRef<UsageRepository>;
 String _$dashboardRepositoryHash() =>
-    r'16d88f7e965c19fc236f82325d7b31cc2ccac251';
+    r'0e1b4437bc30f0858d2ba59a46beb5f47c6a2e43';
 
 /// See also [dashboardRepository].
 @ProviderFor(dashboardRepository)
@@ -322,8 +272,6 @@ final dashboardRepositoryProvider = Provider<DashboardRepository>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef DashboardRepositoryRef = ProviderRef<DashboardRepository>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

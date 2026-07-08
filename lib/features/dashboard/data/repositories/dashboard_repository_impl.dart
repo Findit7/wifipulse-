@@ -1,90 +1,58 @@
-import 'package:fpdart/fpdart.dart';
-import '../../../../core/error/app_exception.dart';
-import '../../../../core/error/error_handler.dart';
-import '../../domain/entities/dashboard_summary_entity.dart';
-import '../../domain/repositories/dashboard_repository.dart';
-import '../../../networks/domain/repositories/network_repository.dart';
-import '../../../devices/domain/repositories/device_repository.dart';
-import '../../../usage/domain/repositories/usage_repository.dart';
-import '../../../../core/network/connectivity_service.dart';
+import '../../../../shared/utils/result.dart';
+import '../../../../shared/errors/failure.dart';
+import '../../../../shared/network/connectivity/connectivity_service.dart';
+import '../../../../shared/network/connectivity/wifi_info_service.dart';
+import '../entities/dashboard_entities.dart';
+import '../repositories/dashboard_repository.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
-  final NetworkRepository _networkRepository;
-  final DeviceRepository _deviceRepository;
-  final UsageRepository _usageRepository;
-  final IConnectivityService _connectivityService;
+  final ConnectivityService _connectivityService;
+  final WifiInfoService _wifiInfoService;
 
-  DashboardRepositoryImpl(
-    this._networkRepository,
-    this._deviceRepository,
-    this._usageRepository,
-    this._connectivityService,
-  );
+  DashboardRepositoryImpl(this._connectivityService, this._wifiInfoService);
 
   @override
-  Future<Either<AppException, DashboardSummaryEntity>> getSummary(String userId) async {
-    return ErrorHandler.execute(() async {
-      final networksResult = await _networkRepository.getNetworksForUser(userId);
-      
-      return networksResult.fold(
-        (l) => throw l,
-        (networks) async {
-          if (networks.isEmpty) {
-             return const DashboardSummaryEntity(
-              activeNetwork: null,
-              isOnline: false,
-              pingMs: 0,
-              latestDownloadMbps: 0,
-              latestUploadMbps: 0,
-              totalDevices: 0,
-              newDevices: 0,
-              securityScore: 100,
-              securityRiskLevel: 'Low',
-              todaysUsageBytes: 0,
-              latestInsight: null,
-              activeAlerts: [],
-            );
-          }
+  Future<Result<DashboardStatus>> getDashboardStatus() async {
+    try {
+      final isOnline = await _connectivityService.hasInternetReachability();
+      final ssid = await _wifiInfoService.getWifiName();
+      final bssid = await _wifiInfoService.getWifiBSSID();
+      final gatewayIp = await _wifiInfoService.getWifiGatewayIP();
+      final localIp = await _wifiInfoService.getWifiIP();
 
-          final activeNetwork = networks.first;
-          
-          final isOnline = await _connectivityService.hasInternetReachability();
-
-          final devicesResult = await _deviceRepository.getDevicesForNetwork(activeNetwork.id);
-          final devices = devicesResult.getOrElse((_) => []);
-          final newDevicesCount = devices.where((d) => 
-            d.firstSeen.isAfter(DateTime.now().subtract(const Duration(hours: 24)))
-          ).length;
-
-          final usageResult = await _usageRepository.getUsageHistory(activeNetwork.id);
-          final usageList = usageResult.getOrElse((_) => []);
-          final todaysUsage = usageList.fold<double>(0, (sum, u) {
-            if (u.timestamp.day == DateTime.now().day && u.timestamp.month == DateTime.now().month) {
-               return sum + u.bytesDownloaded + u.bytesUploaded;
-            }
-            return sum;
-          });
-
-          final speedTestResult = await _usageRepository.getSpeedTests(activeNetwork.id);
-          final speedTests = speedTestResult.getOrElse((_) => []);
-          final latestSpeedTest = speedTests.isNotEmpty ? speedTests.first : null;
-
-          return DashboardSummaryEntity(
-            activeNetwork: activeNetwork,
-            isOnline: isOnline,
-            pingMs: latestSpeedTest?.pingMs ?? 0.0,
-            latestDownloadMbps: latestSpeedTest?.downloadSpeedMbps ?? 0.0,
-            latestUploadMbps: latestSpeedTest?.uploadSpeedMbps ?? 0.0,
-            totalDevices: devices.length,
-            newDevices: newDevicesCount,
-            securityScore: 100, // To be aggregated from SecurityRepo in Module 9
-            securityRiskLevel: 'Low',
-            todaysUsageBytes: todaysUsage,
-            latestInsight: null, // To be aggregated from AIInsightsRepo in Module 10
-            activeAlerts: const [],
-          );
-        }
+      final networkSummary = NetworkSummary(
+        ssid: ssid,
+        bssid: bssid,
+        gatewayIp: gatewayIp,
+        localIp: localIp,
+        isOnline: isOnline,
+        signalStrength: 85, // Mocked for now since not supported natively cross-platform without platform channels
       );
-    });
+
+      // Mocked statistics for Phase 2.2 until Device and Speed modules are built
+      const stats = DashboardStatistics(
+        connectedDevices: 12,
+        downloadSpeedMbps: 150.5,
+        uploadSpeedMbps: 50.2,
+        pingMs: 12.0,
+        healthScore: 92,
+        securityScore: 100,
+        aiStatus: 'Optimal',
+      );
+
+      final status = DashboardStatus(
+        network: networkSummary,
+        stats: stats,
+        recentActivity: [
+          'MacBook Pro joined the network',
+          'Speed test completed: 150 Mbps',
+          'AI optimized channel for less interference',
+        ],
+      );
+
+      return Result.success(status);
+    } catch (e) {
+      return Result.failure(NetworkFailure('Failed to fetch dashboard data: $e'));
+    }
   }
 }

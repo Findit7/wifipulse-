@@ -52,10 +52,7 @@ import '../../features/networks/data/repositories/network_repository_impl.dart';
 import '../../features/networks/data/datasources/network_local_data_source.dart';
 
 // Connectivity
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:network_info_plus/network_info_plus.dart';
-import '../../core/network/connectivity_service.dart';
-import '../../core/network/connectivity_service_impl.dart';
+import '../../shared/network/providers/network_providers.dart';
 
 // Auth
 import 'package:firebase_auth/firebase_auth.dart';
@@ -111,10 +108,7 @@ SyncRepository syncRepository(SyncRepositoryRef ref) {
   );
 }
 
-@Riverpod(keepAlive: true)
-IConnectivityService connectivityService(ConnectivityServiceRef ref) {
-  return ConnectivityServiceImpl(Connectivity(), NetworkInfo());
-}
+
 
 @Riverpod(keepAlive: true)
 NetworkRepository networkRepository(NetworkRepositoryRef ref) {
@@ -170,9 +164,7 @@ UsageRepository usageRepository(UsageRepositoryRef ref) {
 @Riverpod(keepAlive: true)
 DashboardRepository dashboardRepository(DashboardRepositoryRef ref) {
   return DashboardRepositoryImpl(
-    ref.watch(networkRepositoryProvider),
-    ref.watch(deviceRepositoryProvider),
-    ref.watch(usageRepositoryProvider),
     ref.watch(connectivityServiceProvider),
+    ref.watch(wifiInfoServiceProvider),
   );
 }

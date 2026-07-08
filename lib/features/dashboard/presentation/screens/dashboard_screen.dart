@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/dashboard_provider.dart';
-import '../widgets/network_pulse_card.dart';
-import '../widgets/quick_actions_row.dart';
-import '../widgets/devices_summary_card.dart';
-import '../widgets/security_summary_card.dart';
-import '../widgets/usage_summary_card.dart';
-import '../widgets/latest_insight_card.dart';
-import '../widgets/security_alert_banner.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../widgets/network_header_card.dart';
+import '../widgets/quick_stats_row.dart';
+import '../widgets/network_health_card.dart';
+import '../widgets/quick_actions.dart';
+import '../widgets/recent_activity_card.dart';
+import '../widgets/dashboard_bottom_navigation.dart';
+import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_spacing.dart';
+import '../../../../shared/widgets/loading_view.dart';
+import '../../../../shared/widgets/error_view.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -16,84 +19,83 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardState = ref.watch(dashboardControllerProvider);
+    final authState = ref.watch(authControllerProvider);
+    final isGuest = authState.status == AuthStateStatus.guest;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: dashboardState.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(
+      appBar: AppBar(
+        title: Row(
+          children: [
+            const Icon(Icons.wifi_tethering, color: AppColors.primary),
+            AppSpacing.gapSm,
+            Text('WiFiPulse', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () {
+              // Open user profile or auth modal
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              // Open settings
+            },
+          ),
+        ],
+      ),
+      body: dashboardState.when(
+        data: (status) => RefreshIndicator(
+          onRefresh: () => ref.read(dashboardControllerProvider.notifier).refresh(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: AppSpacing.paddingAllLg,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Failed to load dashboard', style: TextStyle(color: AppColors.error)),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => ref.read(dashboardControllerProvider.notifier).refresh(),
-                  child: const Text('Retry'),
-                )
+                if (isGuest)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.warning.withValues(alpha: 0.5)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.info_outline, color: AppColors.warning),
+                        AppSpacing.gapSm,
+                        Expanded(
+                          child: Text('You are in Guest Mode. Some features may be limited.'),
+                        ),
+                      ],
+                    ),
+                  ),
+                NetworkHeaderCard(network: status.network),
+                AppSpacing.gapLg,
+                QuickStatsRow(stats: status.stats),
+                AppSpacing.gapLg,
+                NetworkHealthCard(stats: status.stats),
+                AppSpacing.gapLg,
+                const QuickActions(),
+                AppSpacing.gapLg,
+                RecentActivityCard(activities: status.recentActivity),
+                const SizedBox(height: 100), // padding for bottom nav
               ],
             ),
           ),
-          data: (summary) {
-            return RefreshIndicator(
-              onRefresh: () => ref.read(dashboardControllerProvider.notifier).refresh(),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hello,',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      summary.activeNetwork?.ssid ?? 'No Network Selected',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 24),
-
-                    SecurityAlertBanner(summary: summary),
-                    
-                    NetworkPulseCard(summary: summary),
-                    const SizedBox(height: 24),
-                    
-                    const QuickActionsRow(),
-                    const SizedBox(height: 24),
-
-                    Text('Overview', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 16),
-                    
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: 1.1,
-                      children: [
-                        DevicesSummaryCard(summary: summary),
-                        SecuritySummaryCard(summary: summary),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    UsageSummaryCard(summary: summary),
-                    
-                    const SizedBox(height: 24),
-                    if (summary.latestInsight != null) ...[
-                      Text('Insights', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 16),
-                      LatestInsightCard(summary: summary),
-                    ]
-                  ],
-                ),
-              ),
-            );
-          },
+        ),
+        loading: () => const LoadingView(message: 'Loading Dashboard...'),
+        error: (error, stack) => ErrorView(
+          message: 'Failed to load dashboard: $error',
+          onRetry: () => ref.read(dashboardControllerProvider.notifier).refresh(),
         ),
       ),
+      bottomNavigationBar: const DashboardBottomNavigation(),
     );
   }
 }

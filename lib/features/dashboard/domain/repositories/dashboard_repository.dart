@@ -1,7 +1,6 @@
-import 'package:fpdart/fpdart.dart';
-import '../../../../core/error/app_exception.dart';
-import '../entities/dashboard_summary_entity.dart';
+import '../../../../shared/utils/result.dart';
+import '../entities/dashboard_entities.dart';
 
 abstract class DashboardRepository {
-  Future<Either<AppException, DashboardSummaryEntity>> getSummary(String userId);
+  Future<Result<DashboardStatus>> getDashboardStatus();
 }
