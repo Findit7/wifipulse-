@@ -45,6 +45,7 @@
 | 1.14 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 14 (Monetization & Growth Strategy) |
 | 1.15 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 15 (Product Roadmap & Version Strategy) |
 | 1.16 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 16 (Enterprise & Scalability) |
+| 1.17 | 2026-07-08 | AI Assistant | Wrote PRD Chapter 17 (Developer Guide & Standards) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -2707,14 +2708,175 @@ graph TD
 - **Mesh-Network Crowdsourcing:** Allowing nearby WiFiPulse users to securely share internet access during regional outages (e.g., natural disasters).
 - **Hardware Appliance:** Selling a dedicated "WiFiPulse Probe" (a small dongle) that plugs into enterprise switches for 24/7 monitoring independent of a phone.
 
-## 34. Risks
+## 34. Developer Guide & Engineering Standards (Chapter 17)
+
+### 17.1 Engineering Philosophy
+WiFiPulse is built on a foundation of rigor, readability, and resilience.
+
+- **Clean Architecture:** Strict separation of concerns. UI does not know about databases; databases do not know about UI.
+- **SOLID Principles:** Single Responsibility, Open-Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion are mandatory.
+- **Scalable Code:** Writing code that can be easily extended without modifying existing, tested logic.
+- **Maintainability:** Code is read 10x more often than it is written. Optimize for the reader, not the writer.
+- **Performance First:** Dart is fast, but Flutter UI can jank. Avoid unnecessary widget rebuilds and offload heavy parsing to isolates.
+- **Security First Development:** Assume all networks are hostile. Validate every input. Sanitize every output.
+
+### 17.2 Flutter Development Standards
+Rules for the presentation layer.
+
+- **Flutter Version Strategy:** Always target the latest stable Flutter SDK. Beta channels are explicitly forbidden in production branches.
+- **Dart Guidelines:** Strictly adhere to the official [Effective Dart](https://dart.dev/effective-dart) guidelines.
+- **Null Safety Rules:** Sound null safety is mandatory. The `!` (bang) operator is forbidden unless guarded by a preceding null check. Prefer `?.` and `??`.
+- **Widget Architecture:** Keep `build` methods under 50 lines. Extract complex UI elements into private StatelessWidgets rather than helper methods to leverage Flutter's element tree caching.
+- **Reusable Components:** If a UI element (button, card, dialog) is used more than twice, it must be extracted to `lib/shared/widgets/`.
+- **Code Organization:** Organize by Feature, not by Layer (e.g., `lib/features/auth/` instead of `lib/screens/auth/`).
+
+### 17.3 Project Structure Rules
+The `lib/` directory must adhere to the following strict hierarchy:
+
+- `lib/core/`: Application-wide utilities, routing, theme data, error classes, and environment configurations.
+- `lib/features/`: The meat of the app. Every major capability (e.g., `auth`, `dashboard`, `speed_test`) gets its own folder here.
+- *Inside each feature folder:*
+  - `data/`: Contains Repositories (implementations), Data Sources (API/Local DB calls), and DTOs (Data Transfer Objects).
+  - `domain/`: Contains Entities (pure business objects), Repositories (abstract interfaces), and Use Cases (business logic).
+  - `presentation/`: Contains Pages/Screens, specific UI Widgets, and State Providers (Riverpod).
+- `lib/shared/`: Cross-feature boundaries.
+  - `widgets/`: Globally reusable UI components.
+  - `providers/`: Global state (e.g., current user, theme mode).
+  - `services/`: Wrappers for 3rd party SDKs (e.g., Firebase, Crashlytics).
+
+### 17.4 Clean Architecture Rules
+Enforcing the dependency rule: Dependencies must point INWARD toward the Domain layer.
+
+- **Domain Layer (Innermost):** The purest layer. Zero dependencies on Flutter, Firebase, or SQL. Contains Entities and abstract Repository interfaces.
+- **Data Layer:** Depends on the Domain layer. Implements the Repository interfaces. Handles caching and API mapping.
+- **Presentation Layer (Outermost):** Depends on Domain (to execute Use Cases) and occasionally Data (via Dependency Injection). Never bypasses Domain to talk directly to Data.
+- **Repository Pattern:** The Data Layer must hide the source of data (Local vs Remote) from the Domain layer.
+- **Use Cases:** Single-responsibility classes that execute one specific business action (e.g., `ScanNetworkUseCase`).
+- **Entities vs Models:** 
+  - `Entities` live in Domain (pure data).
+  - `Models` (or DTOs) live in Data (include `fromJson` / `toJson` serialization).
+- **Dependency Direction Rules:** UI -> Domain <- Data.
+
+### 17.5 State Management Standards
+WiFiPulse exclusively uses Riverpod for state management.
+
+- **Providers:** Use `@riverpod` code generation for all providers to ensure type safety and auto-dispose capabilities.
+- **StateNotifier / Notifier:** Use `Notifier` (or `AsyncNotifier`) for managing complex, mutable state instead of legacy `StateNotifier`.
+- **AsyncValue Handling:** Always exhaustively switch on `AsyncValue` using `.when(data:, loading:, error:)`. Do not suppress loading or error states.
+- **Caching:** Leverage Riverpod's `keepAlive` selectively for expensive operations (e.g., Router Discovery results) to prevent unnecessary re-fetching.
+- **Error States:** Providers must catch internal exceptions and yield a structured `AsyncError`, never throwing uncaught exceptions to the UI.
+- **Loading States:** UI must gracefully handle loading states with Skeleton loaders, not just spinning circles.
+- **Dependency Injection:** Riverpod acts as our DI container. Repositories and Services must be exposed via `Provider` and injected into UseCases/Notifiers.
+
+### 17.6 UI Development Rules
+Crafting a premium experience.
+
+- **Design System Usage:** Do not hardcode colors or text styles. Always use `Theme.of(context).colorScheme` and `Theme.of(context).textTheme`.
+- **Component Reuse:** Refer to Chapter 4 (Design System) for standard component styling.
+- **Responsive Layout:** The app must render flawlessly on 4.5" phones and 12" tablets. Use `LayoutBuilder` and `SafeArea`.
+- **Dark Mode Support:** All UI must be tested in both Light and Dark modes. Dark mode is the primary aesthetic.
+- **Accessibility:** Use `Semantics` widgets for custom icons. Ensure a minimum contrast ratio of 4.5:1 for text.
+- **Animations:** Limit heavy `AnimationController` usage. Prefer implicit animations (`AnimatedContainer`, `AnimatedOpacity`) for state transitions.
+- **Performance Guidelines:** Avoid `Opacity` widgets with heavy children; use color alpha blending instead. Avoid `ClipRRect` where possible.
+
+### 17.7 Code Quality Standards
+Clean code is mandated.
+
+- **Naming Conventions:** 
+  - Classes/Enums: `UpperCamelCase`
+  - Variables/Methods: `lowerCamelCase`
+  - Files/Folders: `snake_case`
+- **File Naming:** Suffix files with their architectural role (e.g., `login_page.dart`, `auth_repository.dart`, `user_entity.dart`).
+- **Function Rules:** Functions must do exactly one thing. If a function requires the word "and" in its name (e.g., `saveUserAndNavigate`), it must be split.
+- **Documentation Standards:** Public APIs, Repositories, and UseCases require triple-slash `///` docstrings explaining *why*, not just *what*.
+- **Comments Policy:** Inline comments should be rare. If code is complex enough to require a comment, it should be refactored to be self-documenting. Explain business workarounds (the "why"), not the syntax.
+
+### 17.8 Error Handling Standards
+Failing gracefully.
+
+- **Failure Classes:** Use a structured `Failure` class (often via the `fpdart` or `dartz` package, or a custom sealed class) to pass errors from Data to Domain to UI. Never pass raw `Exception` objects to the UI.
+- **Exception Handling:** Only catch exceptions you can handle. Let fatal errors crash early in development.
+- **Logging Rules:** Log all caught exceptions using a centralized `LoggerService`. Do not use `print()` in production code.
+- **Retry Logic:** Network requests must implement exponential backoff retry logic (e.g., using the `retry` package) before failing.
+- **Offline Errors:** Explicitly detect `SocketException` and return a user-friendly `NetworkFailure.offline()` rather than a generic "Something went wrong".
+- **User Friendly Messages:** Map `Failure` types to localized, actionable UI strings (e.g., "Please check your router password and try again").
+
+### 17.9 Performance Guidelines
+Keeping the app buttery smooth at 60/120fps.
+
+- **Memory Optimization:** Call `dispose()` on all Controllers (Text, Scroll, Animation) in `StatefulWidget`s. Avoid holding large lists of data in memory if they can be paginated.
+- **Widget Rebuild Reduction:** Use `const` constructors everywhere. Riverpod's `select` method must be used to listen to specific properties rather than entire objects to prevent over-rebuilding.
+- **Database Optimization:** Use batched transactions for bulk inserts in Drift/SQLite. Ensure indices are created for frequently queried columns (e.g., MAC addresses).
+- **Background Processing:** Any task taking > 16ms (e.g., parsing a large JSON payload from the router) must be moved to an Isolate via `compute()`.
+- **Battery Optimization:** Avoid aggressive background polling. Use push notifications or `WorkManager` for periodic syncs.
+- **Network Efficiency:** Compress payload data. Cache heavy image assets.
+
+### 17.10 Security Coding Rules
+Zero trust inside the codebase.
+
+- **Secret Management:** API keys (Firebase, Gemini) must NEVER be committed to the repository. They belong in a `.env` file and GitHub Secrets.
+- **Encryption:** Any PII or sensitive router data (like BSSIDs) must be stored using `flutter_secure_storage`, not `SharedPreferences`.
+- **Authentication Handling:** JWT/Session tokens must be cleared from memory and secure storage immediately upon logout or token expiration.
+- **Permission Handling:** Request OS permissions (Location, Local Network) *only* at the exact moment they are needed, accompanied by a rationale dialog.
+- **Secure Storage:** SQLite databases must be encrypted at rest (using SQLCipher) if they contain sensitive historical telemetry.
+
+### 17.11 Git Development Rules
+Protecting the `main` branch.
+
+- **Commit Standards:** Use Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:`).
+- **Branch Naming:** `type/issue-number-brief-description` (e.g., `feat/14-add-speed-test`, `fix/88-crash-on-login`).
+- **Pull Request Rules:** PRs must be small and focused. "Kitchen sink" PRs that touch 50+ files will be rejected.
+- **Review Checklist:** Reviewers must check for: SOLID compliance, test coverage, memory leaks, and proper Riverpod usage.
+- **Release Tagging:** Only the Lead Maintainer or CI/CD pipeline can push Git tags (`v1.0.0`).
+
+### 17.12 AI Coding Assistant Rules
+Specific directives for Antigravity (and other AI agents) contributing to WiFiPulse.
+
+- **Never rewrite entire app unnecessarily:** Refactor incrementally. Do not propose massive 2,000-line diffs unless explicitly commanded.
+- **Always check existing architecture:** Before generating new UI or Logic, search the codebase to see if a reusable widget or provider already exists.
+- **Follow PRD:** The `MASTER_PRD_V1.md` is the single source of truth. Do not invent features or alter the product vision.
+- **Follow Clean Architecture:** Ensure generated code is placed in the correct `domain`, `data`, or `presentation` folder. Do not put HTTP requests in UI files.
+- **Create tests:** When generating a UseCase or Repository, simultaneously generate the corresponding unit test file.
+- **No duplicate modules:** Check `pubspec.yaml` before adding a new dependency. If we use `dio` for HTTP, do not introduce `http`.
+- **No temporary fixes:** "TODO: Fix this later" is forbidden. Implement the robust solution or document the technical debt explicitly in an issue tracker.
+
+---
+
+### Developer Checklist (Daily)
+- [ ] Did I run `dart format .`?
+- [ ] Does `flutter analyze` report 0 issues?
+- [ ] Are all my new strings added to the localization files?
+- [ ] Did I use `const` wherever possible?
+
+### Code Review Checklist (PR Reviewers)
+- [ ] Does this PR violate Clean Architecture? (e.g., UI talking to Drift directly).
+- [ ] Are exceptions caught and mapped to `Failure` classes?
+- [ ] Is there sufficient unit test coverage for new Domain logic?
+- [ ] Are there any hardcoded colors or text styles?
+
+### Architecture Checklist
+- [ ] Entities depend on nothing.
+- [ ] UseCases depend on Repositories (interfaces).
+- [ ] Repositories (implementations) depend on Data Sources.
+- [ ] Presentation depends on UseCases (via Riverpod).
+
+### AI Agent Instructions
+*Notice to LLMs reading this file:* 
+You are acting as a Senior Flutter Architect. Your output must strictly adhere to the guidelines in Section 17. If a user requests code that violates these rules (e.g., putting SQLite queries in a StatefulWidget), you must respectfully decline and provide the Clean Architecture compliant solution instead.
+
+### Engineering Best Practices
+- "Make it work, make it right, make it fast." (In that order).
+- Code is a liability; keep it as small as possible.
+- If you copy-paste code for a third time, extract it into a shared utility.
+
+## 35. Risks
 > `[Placeholder: Identify potential technical, market, or execution risks and mitigation strategies.]`
 
-## 35. Assumptions
+## 36. Assumptions
 > `[Placeholder: List assumptions made during the PRD creation that require validation.]`
 
-## 36. Open Questions
+## 37. Open Questions
 > `[Placeholder: List any unresolved product decisions that need stakeholder alignment.]`
 
-## 37. Glossary
+## 38. Glossary
 > `[Placeholder: Define project-specific terms, acronyms, and technical jargon.]`
