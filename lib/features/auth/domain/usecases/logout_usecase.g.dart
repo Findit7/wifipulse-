@@ -1,26 +1,25 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_provider.dart';
+part of 'logout_usecase.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authControllerHash() => r'6ea8b89c1d4f2d6fa6c0184ad6c2ca543d78756a';
+String _$logoutUseCaseHash() => r'1fca1b81dfb37219a50c22eae4fcd06bbc34f80d';
 
-/// See also [AuthController].
-@ProviderFor(AuthController)
-final authControllerProvider =
-    NotifierProvider<AuthController, AuthState>.internal(
-  AuthController.new,
-  name: r'authControllerProvider',
+/// See also [logoutUseCase].
+@ProviderFor(logoutUseCase)
+final logoutUseCaseProvider = AutoDisposeProvider<LogoutUseCase>.internal(
+  logoutUseCase,
+  name: r'logoutUseCaseProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$authControllerHash,
+      : _$logoutUseCaseHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$AuthController = Notifier<AuthState>;
+typedef LogoutUseCaseRef = AutoDisposeProviderRef<LogoutUseCase>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

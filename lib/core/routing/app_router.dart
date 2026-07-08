@@ -57,9 +57,9 @@ GoRouter appRouter(AppRouterRef ref) {
         return state.uri.path == '/splash' ? null : '/splash';
       }
 
-      if (authState.isLoading || !authState.hasValue) return null;
+      if (authState.status == AuthStateStatus.loading) return null;
 
-      final user = authState.value;
+      final user = authState.user;
       final isLoggingIn = state.uri.path == '/login';
       final isRegistering = state.uri.path == '/register';
       final isOnboarding = state.uri.path == '/onboarding';

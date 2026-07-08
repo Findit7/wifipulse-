@@ -1,26 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_provider.dart';
+part of 'login_with_google_usecase.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authControllerHash() => r'6ea8b89c1d4f2d6fa6c0184ad6c2ca543d78756a';
+String _$loginWithGoogleUseCaseHash() =>
+    r'e9a80e74f166f9920983e909d59ac641a3bce353';
 
-/// See also [AuthController].
-@ProviderFor(AuthController)
-final authControllerProvider =
-    NotifierProvider<AuthController, AuthState>.internal(
-  AuthController.new,
-  name: r'authControllerProvider',
+/// See also [loginWithGoogleUseCase].
+@ProviderFor(loginWithGoogleUseCase)
+final loginWithGoogleUseCaseProvider =
+    AutoDisposeProvider<LoginWithGoogleUseCase>.internal(
+  loginWithGoogleUseCase,
+  name: r'loginWithGoogleUseCaseProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$authControllerHash,
+      : _$loginWithGoogleUseCaseHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$AuthController = Notifier<AuthState>;
+typedef LoginWithGoogleUseCaseRef
+    = AutoDisposeProviderRef<LoginWithGoogleUseCase>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

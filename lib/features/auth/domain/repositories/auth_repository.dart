@@ -1,13 +1,12 @@
-import 'package:fpdart/fpdart.dart';
-import '../../../../core/error/app_exception.dart';
+import '../../../shared/utils/result.dart';
 import '../entities/user_entity.dart';
 
 abstract class AuthRepository {
-  Future<Either<AppException, UserEntity>> loginWithEmail(String email, String password);
-  Future<Either<AppException, UserEntity>> register(String name, String email, String password);
-  Future<Either<AppException, UserEntity>> loginWithGoogle();
-  Future<Either<AppException, UserEntity>> loginAsGuest();
-  Future<Either<AppException, void>> logout();
-  Future<Either<AppException, UserEntity?>> getCurrentUser();
-  Future<Either<AppException, void>> completeOnboarding();
+  Future<Result<UserEntity>> loginWithEmail(String email, String password);
+  Future<Result<UserEntity>> register(String name, String email, String password);
+  Future<Result<UserEntity>> loginWithGoogle();
+  Future<Result<UserEntity>> loginAsGuest();
+  Future<Result<void>> logout();
+  Future<Result<UserEntity?>> getCurrentUser();
+  Future<Result<void>> completeOnboarding();
 }

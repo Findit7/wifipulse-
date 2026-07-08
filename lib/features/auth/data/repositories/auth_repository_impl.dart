@@ -1,12 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/error/app_exception.dart';
-import '../../../../core/error/error_handler.dart';
+import '../../../../shared/utils/result.dart';
+import '../../../../shared/errors/failure.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_local_data_source.dart';
 import '../datasources/auth_remote_data_source.dart';
 import '../models/user_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthLocalDataSource _localDataSource;
@@ -16,8 +16,8 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this._localDataSource, this._remoteDataSource, this._firebaseAuth);
 
   @override
-  Future<Either<AppException, UserEntity>> register(String name, String email, String password) async {
-    return ErrorHandler.execute(() async {
+  Future<Result<UserEntity>> register(String name, String email, String password) async {
+    try {
       final userModel = await _remoteDataSource.register(name, email, password);
       await _localDataSource.saveUser(userModel);
       
@@ -25,13 +25,15 @@ class AuthRepositoryImpl implements AuthRepository {
       if (token != null) {
         await _localDataSource.saveToken(token);
       }
-      return userModel;
-    });
+      return Right(userModel);
+    } catch (e) {
+      return Left(AuthenticationFailure(e.toString()));
+    }
   }
 
   @override
-  Future<Either<AppException, UserEntity>> loginWithEmail(String email, String password) async {
-    return ErrorHandler.execute(() async {
+  Future<Result<UserEntity>> loginWithEmail(String email, String password) async {
+    try {
       final userModel = await _remoteDataSource.loginWithEmail(email, password);
       await _localDataSource.saveUser(userModel);
       
@@ -39,52 +41,67 @@ class AuthRepositoryImpl implements AuthRepository {
       if (token != null) {
         await _localDataSource.saveToken(token);
       }
-      return userModel;
-    });
+      return Right(userModel);
+    } catch (e) {
+      return Left(AuthenticationFailure(e.toString()));
+    }
   }
 
   @override
-  Future<Either<AppException, UserEntity>> loginWithGoogle() async {
-    return ErrorHandler.execute(() async {
+  Future<Result<UserEntity>> loginWithGoogle() async {
+    try {
       final userModel = await _remoteDataSource.loginWithGoogle();
       await _localDataSource.saveUser(userModel);
-      return userModel;
-    });
+      return Right(userModel);
+    } catch (e) {
+      return Left(AuthenticationFailure(e.toString()));
+    }
   }
 
   @override
-  Future<Either<AppException, UserEntity>> loginAsGuest() async {
-    return ErrorHandler.execute(() async {
+  Future<Result<UserEntity>> loginAsGuest() async {
+    try {
       final userModel = await _remoteDataSource.loginAsGuest();
       await _localDataSource.saveUser(userModel);
-      return userModel;
-    });
+      return Right(userModel);
+    } catch (e) {
+      return Left(AuthenticationFailure(e.toString()));
+    }
   }
 
   @override
-  Future<Either<AppException, void>> logout() async {
-    return ErrorHandler.execute(() async {
+  Future<Result<void>> logout() async {
+    try {
       await _remoteDataSource.logout();
       await _localDataSource.clearUser();
       await _localDataSource.clearToken();
-    });
+      return const Right(null);
+    } catch (e) {
+      return Left(AuthenticationFailure(e.toString()));
+    }
   }
 
   @override
-  Future<Either<AppException, UserEntity?>> getCurrentUser() async {
-    return ErrorHandler.execute(() async {
-      return await _localDataSource.getUser();
-    });
+  Future<Result<UserEntity?>> getCurrentUser() async {
+    try {
+      final user = await _localDataSource.getUser();
+      return Right(user);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
   }
 
   @override
-  Future<Either<AppException, void>> completeOnboarding() async {
-    return ErrorHandler.execute(() async {
+  Future<Result<void>> completeOnboarding() async {
+    try {
       final user = await _localDataSource.getUser();
       if (user != null) {
         final updatedUser = user.copyWith(hasCompletedOnboarding: true);
         await _localDataSource.saveUser(UserModel.fromEntity(updatedUser));
       }
-    });
+      return const Right(null);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
   }
 }

@@ -1,26 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_provider.dart';
+part of 'get_current_user_usecase.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authControllerHash() => r'6ea8b89c1d4f2d6fa6c0184ad6c2ca543d78756a';
+String _$getCurrentUserUseCaseHash() =>
+    r'f7afd2183fc37b8586fc8394f1a7b20fc8ebaaa6';
 
-/// See also [AuthController].
-@ProviderFor(AuthController)
-final authControllerProvider =
-    NotifierProvider<AuthController, AuthState>.internal(
-  AuthController.new,
-  name: r'authControllerProvider',
+/// See also [getCurrentUserUseCase].
+@ProviderFor(getCurrentUserUseCase)
+final getCurrentUserUseCaseProvider =
+    AutoDisposeProvider<GetCurrentUserUseCase>.internal(
+  getCurrentUserUseCase,
+  name: r'getCurrentUserUseCaseProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$authControllerHash,
+      : _$getCurrentUserUseCaseHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$AuthController = Notifier<AuthState>;
+typedef GetCurrentUserUseCaseRef
+    = AutoDisposeProviderRef<GetCurrentUserUseCase>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

@@ -1,26 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_provider.dart';
+part of 'login_with_email_usecase.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authControllerHash() => r'6ea8b89c1d4f2d6fa6c0184ad6c2ca543d78756a';
+String _$loginWithEmailUseCaseHash() =>
+    r'9eeae94c39ab08b6a91d50ec6cfe906051bf1d07';
 
-/// See also [AuthController].
-@ProviderFor(AuthController)
-final authControllerProvider =
-    NotifierProvider<AuthController, AuthState>.internal(
-  AuthController.new,
-  name: r'authControllerProvider',
+/// See also [loginWithEmailUseCase].
+@ProviderFor(loginWithEmailUseCase)
+final loginWithEmailUseCaseProvider =
+    AutoDisposeProvider<LoginWithEmailUseCase>.internal(
+  loginWithEmailUseCase,
+  name: r'loginWithEmailUseCaseProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$authControllerHash,
+      : _$loginWithEmailUseCaseHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$AuthController = Notifier<AuthState>;
+typedef LoginWithEmailUseCaseRef
+    = AutoDisposeProviderRef<LoginWithEmailUseCase>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
