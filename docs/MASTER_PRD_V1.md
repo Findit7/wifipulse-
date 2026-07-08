@@ -46,6 +46,7 @@
 | 1.15 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 15 (Product Roadmap & Version Strategy) |
 | 1.16 | 2026-07-05 | AI Assistant | Wrote PRD Chapter 16 (Enterprise & Scalability) |
 | 1.17 | 2026-07-08 | AI Assistant | Wrote PRD Chapter 17 (Developer Guide & Standards) |
+| 1.18 | 2026-07-08 | AI Assistant | Wrote PRD Chapter 18 (PRD Freeze & Implementation Plan) |
 ## Approvals
 
 | Name | Role | Date | Signature |
@@ -2869,14 +2870,113 @@ You are acting as a Senior Flutter Architect. Your output must strictly adhere t
 - Code is a liability; keep it as small as possible.
 - If you copy-paste code for a third time, extract it into a shared utility.
 
-## 35. Risks
-> `[Placeholder: Identify potential technical, market, or execution risks and mitigation strategies.]`
+## 35. PRD Freeze, Implementation Execution Plan & Release Governance (Chapter 18)
 
-## 36. Assumptions
-> `[Placeholder: List assumptions made during the PRD creation that require validation.]`
+### 18.1 PRD Freeze Declaration
+This document is now the unalterable foundation of the WiFiPulse project.
 
-## 37. Open Questions
-> `[Placeholder: List any unresolved product decisions that need stakeholder alignment.]`
+- **MASTER_PRD_V1 is the single source of truth:** If a feature, architecture rule, or design philosophy is not in this document, it does not exist in the product.
+- **No random feature additions during development:** Scope creep is strictly prohibited. "Nice-to-have" ideas discovered during coding must be logged in the backlog for V1.5, not crammed into V1.0.
+- **No architecture rewrites without approval:** The Clean Architecture and Riverpod standards defined herein are final.
+- **Feature changes require version update:** Any deviation from this document requires a formal PRD amendment (e.g., bumping to `MASTER_PRD_V1.1`) and stakeholder sign-off.
+- **Development must follow documented scope:** Engineering effort must strictly align with the execution plan outlined below.
 
-## 38. Glossary
-> `[Placeholder: Define project-specific terms, acronyms, and technical jargon.]`
+### 18.2 Implementation Order
+To ensure a stable build, development will proceed strictly in the following phases. A phase must be 100% complete and tested before the next begins.
+
+- **Phase 1: Foundation**
+  - Project cleanup (remove default counter app, configure linting).
+  - Dependencies (add Riverpod, GoRouter, Drift, Dio, etc.).
+  - Theme system (implement Material 3 colors, typography, and dark mode).
+  - Routing (set up GoRouter paths and guards).
+  - State management (initialize Riverpod ProviderScope).
+  - Database foundation (generate Drift tables and DAOs).
+
+- **Phase 2: Core Features**
+  - Authentication (Firebase email/Google sign-in, secure token storage).
+  - Dashboard (Main UI layout, bottom navigation, floating network card).
+  - WiFi information (Fetching current SSID and Gateway IP via native channels).
+  - Router detection (Matching Gateway MAC to the OUI vendor database).
+  - Device discovery (ARP scanning the subnet to find connected devices).
+
+- **Phase 3: Intelligence Layer**
+  - Usage analytics (Storing scan history in SQLite).
+  - Network health scoring (Calculating a 0-100 score based on ping and security).
+  - AI recommendations (Connecting to the Gemini API for natural language insights).
+  - Predictions (Basic forecasting based on local historical data).
+
+- **Phase 4: Security Layer**
+  - Unknown device alerts (Flagging MAC addresses not seen in previous scans).
+  - Risk scoring (Evaluating open ports or weak WPA configurations).
+  - Network protection (Generating alerts for suspicious network changes).
+
+- **Phase 5: Production Release**
+  - Testing (Unit, Widget, and Integration tests passing).
+  - Optimization (Resolving all analyzer warnings and memory leaks).
+  - APK generation (Building the release `appbundle` via CI/CD).
+  - Play Store readiness (Uploading assets, privacy policies, and mapping files).
+
+### 18.3 Development Rules
+Discipline is required at every stage of the coding lifecycle.
+
+- **Before coding:**
+  - Read PRD: Review the relevant chapter for the feature being built.
+  - Check existing files: Do not reinvent the wheel. Search `lib/shared/` first.
+  - Understand architecture: Map out the Entity -> UseCase -> Repository -> UI flow.
+  - Plan changes: Outline the files to be touched before writing the first line of code.
+
+- **During coding:**
+  - Small commits: Commit frequently with Conventional Commits (e.g., `feat(auth): add login UI`).
+  - No duplicate files: Ensure utility functions are centralized.
+  - No unused modules: Aggressively delete dead code and unused pubspec dependencies.
+  - Follow architecture: Enforce the unidirectional data flow.
+
+- **After coding:**
+  - Run analyzer: `flutter analyze` must return 0 issues.
+  - Run tests: Execute `flutter test` to ensure no regressions.
+  - Commit: Finalize the logical chunk of work.
+  - Push GitHub: Push to the `feature/*` branch and open a Pull Request.
+
+### 18.4 AI Agent Execution Rules
+Specific governance for Antigravity and any autonomous coding assistants.
+
+- **PRD has highest priority:** The AI must defer to this document over its own internal biases or training data defaults.
+- **Never create duplicate Flutter projects:** Work within the existing `wifi_pulse_v2` directory. Do not run `flutter create` again.
+- **Never replace working modules:** If a module works and passes tests, do not refactor it just to change the syntax style.
+- **Improve existing code only:** Add new capabilities by extending existing architectures, not by tearing them down.
+- **Ask before architecture changes:** If the AI determines a PRD architectural rule is technically impossible, it must halt and ask the user for clarification.
+- **Maintain Git history:** The AI must not forcefully overwrite git history (no `git push --force` on shared branches).
+- **Commit every milestone:** The AI must commit its work at logical checkpoints to prevent catastrophic code loss.
+
+### 18.5 Version Control Plan
+The high-level roadmap mapped to Git tags.
+
+- **V1.0 MVP:** The Foundation and Core Features (Phases 1-5). Solves the immediate user problem of "Who is on my Wi-Fi?".
+- **V1.5 Advanced Intelligence:** Deep Gemini LLM integration for conversational troubleshooting.
+- **V2.0 Cloud Sync:** Multi-device synchronization via Firebase Firestore and Premium subscriptions.
+- **V3.0 Smart Home Platform:** Matter/Thread integration and Enterprise dashboard access.
+
+### 18.6 APK Build Pipeline
+The immutable path to production.
+
+- **GitHub repository:** The absolute source of truth.
+- **CI checks:** GitHub Actions automatically runs `flutter format`, `flutter analyze`, and `flutter test`.
+- **Flutter build:** `flutter build apk --release` (for GitHub releases) and `flutter build appbundle --release` (for Play Store).
+- **Android signing:** Injected securely via GitHub Secrets (Keystore, Alias, Passwords).
+- **APK generation:** Artifacts are securely compiled on ephemeral CI runners.
+- **Release artifacts:** Uploaded automatically to Firebase App Distribution for QA and Google Play Console for Production.
+
+### 18.7 Final Acceptance Checklist
+Before V1.0 can be tagged, the following must be verified:
+
+- [ ] **Architecture Complete:** Clean Architecture and Riverpod are strictly implemented without bypasses.
+- [ ] **UI Complete:** All screens match the Material 3 Design System specification.
+- [ ] **Features Complete:** All Phase 1 and Phase 2 items are fully functional.
+- [ ] **Security Passed:** No API keys are hardcoded; local databases are secure.
+- [ ] **Performance Passed:** App cold starts in under 3 seconds; scrolling is 60fps.
+- [ ] **Testing Passed:** Core domain logic has >80% test coverage.
+- [ ] **APK Ready:** A signed release build can be successfully installed on a physical device.
+
+---
+
+**WiFiPulse MASTER_PRD_V1 COMPLETE**
