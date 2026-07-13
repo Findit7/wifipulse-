@@ -1,13 +1,15 @@
-import 'package:fpdart/fpdart.dart';
-import '../../../../core/error/app_exception.dart';
+import '../../../../shared/utils/result.dart';
 import '../entities/usage_entity.dart';
-import '../entities/usage_summary_entity.dart';
-import '../../../networks/domain/entities/speed_test_entity.dart';
+import '../entities/usage_aggregates.dart';
 
 abstract class UsageRepository {
-  Future<Either<AppException, List<UsageEntity>>> getUsageHistory(String networkId);
-  Future<Either<AppException, List<SpeedTestEntity>>> getSpeedTests(String networkId);
-  Future<Either<AppException, UsageSummaryEntity>> getDailySummary(String networkId);
-  Future<Either<AppException, UsageSummaryEntity>> getWeeklySummary(String networkId);
-  Future<Either<AppException, UsageSummaryEntity>> getMonthlySummary(String networkId);
+  Future<Result<void>> recordUsage(UsageEntity usage);
+  Future<Result<UsageSummary>> getUsageSummary();
+  Future<Result<List<TopDevice>>> getTopDevices({int limit = 5});
+  Future<Result<List<DailyUsage>>> getDailyTrends({int days = 7});
+  Future<Result<List<WeeklyUsage>>> getWeeklyTrends({int weeks = 4});
+  Future<Result<List<MonthlyUsage>>> getMonthlyTrends({int months = 12});
+  Future<Result<UsageForecast>> getForecast();
+  Future<Result<String>> exportUsageToCsv();
+  Future<Result<String>> exportUsageToJson();
 }

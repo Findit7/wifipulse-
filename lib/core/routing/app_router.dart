@@ -10,6 +10,7 @@ import '../../features/splash/presentation/providers/splash_provider.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/devices/presentation/screens/devices_screen.dart';
 import '../../features/devices/presentation/screens/device_details_screen.dart';
+import '../../features/usage/presentation/screens/usage_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -44,6 +45,10 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
         path: '/devices',
         builder: (context, state) => const DevicesScreen(),
+      ),
+      GoRoute(
+        path: '/usage',
+        builder: (context, state) => const UsageScreen(),
       ),
       GoRoute(
         path: '/devices/:id',

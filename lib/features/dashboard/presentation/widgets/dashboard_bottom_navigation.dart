@@ -11,7 +11,11 @@ class DashboardBottomNavigation extends StatelessWidget {
     // to preserve state, but we'll use simple routing for Phase 3.1
     final String location = GoRouterState.of(context).uri.path;
     int selectedIndex = 0;
-    if (location.startsWith('/devices')) selectedIndex = 1;
+    if (location.startsWith('/usage')) {
+      selectedIndex = 2;
+    } else if (location.startsWith('/devices')) {
+      selectedIndex = 1;
+    }
 
     return NavigationBar(
       selectedIndex: selectedIndex,
@@ -22,6 +26,9 @@ class DashboardBottomNavigation extends StatelessWidget {
             break;
           case 1:
             context.go('/devices');
+            break;
+          case 2:
+            context.go('/usage');
             break;
         }
       },

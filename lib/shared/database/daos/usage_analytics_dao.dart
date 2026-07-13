@@ -11,5 +11,10 @@ class UsageAnalyticsDao extends DatabaseAccessor<AppDatabase> with _$UsageAnalyt
   Future<List<UsageAnalyticsEntry>> getAnalyticsForDevice(String deviceId) =>
       (select(usageAnalytics)..where((t) => t.deviceId.equals(deviceId))).get();
 
+  Future<List<UsageAnalyticsEntry>> getAllAnalytics() => select(usageAnalytics).get();
+
+  Future<List<UsageAnalyticsEntry>> getAnalyticsSince(DateTime date) =>
+      (select(usageAnalytics)..where((t) => t.recordedAt.isBiggerOrEqualValue(date))).get();
+
   Future<int> insertAnalytics(UsageAnalyticsCompanion analytics) => into(usageAnalytics).insert(analytics);
 }

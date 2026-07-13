@@ -1295,9 +1295,41 @@ class $UsageAnalyticsTable extends UsageAnalytics
   late final GeneratedColumn<DateTime> recordedAt = GeneratedColumn<DateTime>(
       'recorded_at', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _sessionDurationMeta =
+      const VerificationMeta('sessionDuration');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, deviceId, uploadBytes, downloadBytes, recordedAt];
+  late final GeneratedColumn<int> sessionDuration = GeneratedColumn<int>(
+      'session_duration', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _foregroundUsageMeta =
+      const VerificationMeta('foregroundUsage');
+  @override
+  late final GeneratedColumn<int> foregroundUsage = GeneratedColumn<int>(
+      'foreground_usage', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _wifiConnectionDurationMeta =
+      const VerificationMeta('wifiConnectionDuration');
+  @override
+  late final GeneratedColumn<int> wifiConnectionDuration = GeneratedColumn<int>(
+      'wifi_connection_duration', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        deviceId,
+        uploadBytes,
+        downloadBytes,
+        recordedAt,
+        sessionDuration,
+        foregroundUsage,
+        wifiConnectionDuration
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1344,6 +1376,24 @@ class $UsageAnalyticsTable extends UsageAnalytics
     } else if (isInserting) {
       context.missing(_recordedAtMeta);
     }
+    if (data.containsKey('session_duration')) {
+      context.handle(
+          _sessionDurationMeta,
+          sessionDuration.isAcceptableOrUnknown(
+              data['session_duration']!, _sessionDurationMeta));
+    }
+    if (data.containsKey('foreground_usage')) {
+      context.handle(
+          _foregroundUsageMeta,
+          foregroundUsage.isAcceptableOrUnknown(
+              data['foreground_usage']!, _foregroundUsageMeta));
+    }
+    if (data.containsKey('wifi_connection_duration')) {
+      context.handle(
+          _wifiConnectionDurationMeta,
+          wifiConnectionDuration.isAcceptableOrUnknown(
+              data['wifi_connection_duration']!, _wifiConnectionDurationMeta));
+    }
     return context;
   }
 
@@ -1363,6 +1413,13 @@ class $UsageAnalyticsTable extends UsageAnalytics
           .read(DriftSqlType.int, data['${effectivePrefix}download_bytes'])!,
       recordedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}recorded_at'])!,
+      sessionDuration: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}session_duration'])!,
+      foregroundUsage: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}foreground_usage'])!,
+      wifiConnectionDuration: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}wifi_connection_duration'])!,
     );
   }
 
@@ -1379,12 +1436,18 @@ class UsageAnalyticsEntry extends DataClass
   final int uploadBytes;
   final int downloadBytes;
   final DateTime recordedAt;
+  final int sessionDuration;
+  final int foregroundUsage;
+  final int wifiConnectionDuration;
   const UsageAnalyticsEntry(
       {required this.id,
       required this.deviceId,
       required this.uploadBytes,
       required this.downloadBytes,
-      required this.recordedAt});
+      required this.recordedAt,
+      required this.sessionDuration,
+      required this.foregroundUsage,
+      required this.wifiConnectionDuration});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1393,6 +1456,9 @@ class UsageAnalyticsEntry extends DataClass
     map['upload_bytes'] = Variable<int>(uploadBytes);
     map['download_bytes'] = Variable<int>(downloadBytes);
     map['recorded_at'] = Variable<DateTime>(recordedAt);
+    map['session_duration'] = Variable<int>(sessionDuration);
+    map['foreground_usage'] = Variable<int>(foregroundUsage);
+    map['wifi_connection_duration'] = Variable<int>(wifiConnectionDuration);
     return map;
   }
 
@@ -1403,6 +1469,9 @@ class UsageAnalyticsEntry extends DataClass
       uploadBytes: Value(uploadBytes),
       downloadBytes: Value(downloadBytes),
       recordedAt: Value(recordedAt),
+      sessionDuration: Value(sessionDuration),
+      foregroundUsage: Value(foregroundUsage),
+      wifiConnectionDuration: Value(wifiConnectionDuration),
     );
   }
 
@@ -1415,6 +1484,10 @@ class UsageAnalyticsEntry extends DataClass
       uploadBytes: serializer.fromJson<int>(json['uploadBytes']),
       downloadBytes: serializer.fromJson<int>(json['downloadBytes']),
       recordedAt: serializer.fromJson<DateTime>(json['recordedAt']),
+      sessionDuration: serializer.fromJson<int>(json['sessionDuration']),
+      foregroundUsage: serializer.fromJson<int>(json['foregroundUsage']),
+      wifiConnectionDuration:
+          serializer.fromJson<int>(json['wifiConnectionDuration']),
     );
   }
   @override
@@ -1426,6 +1499,9 @@ class UsageAnalyticsEntry extends DataClass
       'uploadBytes': serializer.toJson<int>(uploadBytes),
       'downloadBytes': serializer.toJson<int>(downloadBytes),
       'recordedAt': serializer.toJson<DateTime>(recordedAt),
+      'sessionDuration': serializer.toJson<int>(sessionDuration),
+      'foregroundUsage': serializer.toJson<int>(foregroundUsage),
+      'wifiConnectionDuration': serializer.toJson<int>(wifiConnectionDuration),
     };
   }
 
@@ -1434,13 +1510,20 @@ class UsageAnalyticsEntry extends DataClass
           String? deviceId,
           int? uploadBytes,
           int? downloadBytes,
-          DateTime? recordedAt}) =>
+          DateTime? recordedAt,
+          int? sessionDuration,
+          int? foregroundUsage,
+          int? wifiConnectionDuration}) =>
       UsageAnalyticsEntry(
         id: id ?? this.id,
         deviceId: deviceId ?? this.deviceId,
         uploadBytes: uploadBytes ?? this.uploadBytes,
         downloadBytes: downloadBytes ?? this.downloadBytes,
         recordedAt: recordedAt ?? this.recordedAt,
+        sessionDuration: sessionDuration ?? this.sessionDuration,
+        foregroundUsage: foregroundUsage ?? this.foregroundUsage,
+        wifiConnectionDuration:
+            wifiConnectionDuration ?? this.wifiConnectionDuration,
       );
   UsageAnalyticsEntry copyWithCompanion(UsageAnalyticsCompanion data) {
     return UsageAnalyticsEntry(
@@ -1453,6 +1536,15 @@ class UsageAnalyticsEntry extends DataClass
           : this.downloadBytes,
       recordedAt:
           data.recordedAt.present ? data.recordedAt.value : this.recordedAt,
+      sessionDuration: data.sessionDuration.present
+          ? data.sessionDuration.value
+          : this.sessionDuration,
+      foregroundUsage: data.foregroundUsage.present
+          ? data.foregroundUsage.value
+          : this.foregroundUsage,
+      wifiConnectionDuration: data.wifiConnectionDuration.present
+          ? data.wifiConnectionDuration.value
+          : this.wifiConnectionDuration,
     );
   }
 
@@ -1463,14 +1555,17 @@ class UsageAnalyticsEntry extends DataClass
           ..write('deviceId: $deviceId, ')
           ..write('uploadBytes: $uploadBytes, ')
           ..write('downloadBytes: $downloadBytes, ')
-          ..write('recordedAt: $recordedAt')
+          ..write('recordedAt: $recordedAt, ')
+          ..write('sessionDuration: $sessionDuration, ')
+          ..write('foregroundUsage: $foregroundUsage, ')
+          ..write('wifiConnectionDuration: $wifiConnectionDuration')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, deviceId, uploadBytes, downloadBytes, recordedAt);
+  int get hashCode => Object.hash(id, deviceId, uploadBytes, downloadBytes,
+      recordedAt, sessionDuration, foregroundUsage, wifiConnectionDuration);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1479,7 +1574,10 @@ class UsageAnalyticsEntry extends DataClass
           other.deviceId == this.deviceId &&
           other.uploadBytes == this.uploadBytes &&
           other.downloadBytes == this.downloadBytes &&
-          other.recordedAt == this.recordedAt);
+          other.recordedAt == this.recordedAt &&
+          other.sessionDuration == this.sessionDuration &&
+          other.foregroundUsage == this.foregroundUsage &&
+          other.wifiConnectionDuration == this.wifiConnectionDuration);
 }
 
 class UsageAnalyticsCompanion extends UpdateCompanion<UsageAnalyticsEntry> {
@@ -1488,6 +1586,9 @@ class UsageAnalyticsCompanion extends UpdateCompanion<UsageAnalyticsEntry> {
   final Value<int> uploadBytes;
   final Value<int> downloadBytes;
   final Value<DateTime> recordedAt;
+  final Value<int> sessionDuration;
+  final Value<int> foregroundUsage;
+  final Value<int> wifiConnectionDuration;
   final Value<int> rowid;
   const UsageAnalyticsCompanion({
     this.id = const Value.absent(),
@@ -1495,6 +1596,9 @@ class UsageAnalyticsCompanion extends UpdateCompanion<UsageAnalyticsEntry> {
     this.uploadBytes = const Value.absent(),
     this.downloadBytes = const Value.absent(),
     this.recordedAt = const Value.absent(),
+    this.sessionDuration = const Value.absent(),
+    this.foregroundUsage = const Value.absent(),
+    this.wifiConnectionDuration = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UsageAnalyticsCompanion.insert({
@@ -1503,6 +1607,9 @@ class UsageAnalyticsCompanion extends UpdateCompanion<UsageAnalyticsEntry> {
     required int uploadBytes,
     required int downloadBytes,
     required DateTime recordedAt,
+    this.sessionDuration = const Value.absent(),
+    this.foregroundUsage = const Value.absent(),
+    this.wifiConnectionDuration = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         deviceId = Value(deviceId),
@@ -1515,6 +1622,9 @@ class UsageAnalyticsCompanion extends UpdateCompanion<UsageAnalyticsEntry> {
     Expression<int>? uploadBytes,
     Expression<int>? downloadBytes,
     Expression<DateTime>? recordedAt,
+    Expression<int>? sessionDuration,
+    Expression<int>? foregroundUsage,
+    Expression<int>? wifiConnectionDuration,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1523,6 +1633,10 @@ class UsageAnalyticsCompanion extends UpdateCompanion<UsageAnalyticsEntry> {
       if (uploadBytes != null) 'upload_bytes': uploadBytes,
       if (downloadBytes != null) 'download_bytes': downloadBytes,
       if (recordedAt != null) 'recorded_at': recordedAt,
+      if (sessionDuration != null) 'session_duration': sessionDuration,
+      if (foregroundUsage != null) 'foreground_usage': foregroundUsage,
+      if (wifiConnectionDuration != null)
+        'wifi_connection_duration': wifiConnectionDuration,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1533,6 +1647,9 @@ class UsageAnalyticsCompanion extends UpdateCompanion<UsageAnalyticsEntry> {
       Value<int>? uploadBytes,
       Value<int>? downloadBytes,
       Value<DateTime>? recordedAt,
+      Value<int>? sessionDuration,
+      Value<int>? foregroundUsage,
+      Value<int>? wifiConnectionDuration,
       Value<int>? rowid}) {
     return UsageAnalyticsCompanion(
       id: id ?? this.id,
@@ -1540,6 +1657,10 @@ class UsageAnalyticsCompanion extends UpdateCompanion<UsageAnalyticsEntry> {
       uploadBytes: uploadBytes ?? this.uploadBytes,
       downloadBytes: downloadBytes ?? this.downloadBytes,
       recordedAt: recordedAt ?? this.recordedAt,
+      sessionDuration: sessionDuration ?? this.sessionDuration,
+      foregroundUsage: foregroundUsage ?? this.foregroundUsage,
+      wifiConnectionDuration:
+          wifiConnectionDuration ?? this.wifiConnectionDuration,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1562,6 +1683,16 @@ class UsageAnalyticsCompanion extends UpdateCompanion<UsageAnalyticsEntry> {
     if (recordedAt.present) {
       map['recorded_at'] = Variable<DateTime>(recordedAt.value);
     }
+    if (sessionDuration.present) {
+      map['session_duration'] = Variable<int>(sessionDuration.value);
+    }
+    if (foregroundUsage.present) {
+      map['foreground_usage'] = Variable<int>(foregroundUsage.value);
+    }
+    if (wifiConnectionDuration.present) {
+      map['wifi_connection_duration'] =
+          Variable<int>(wifiConnectionDuration.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1576,6 +1707,9 @@ class UsageAnalyticsCompanion extends UpdateCompanion<UsageAnalyticsEntry> {
           ..write('uploadBytes: $uploadBytes, ')
           ..write('downloadBytes: $downloadBytes, ')
           ..write('recordedAt: $recordedAt, ')
+          ..write('sessionDuration: $sessionDuration, ')
+          ..write('foregroundUsage: $foregroundUsage, ')
+          ..write('wifiConnectionDuration: $wifiConnectionDuration, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2432,6 +2566,9 @@ typedef $$UsageAnalyticsTableCreateCompanionBuilder = UsageAnalyticsCompanion
   required int uploadBytes,
   required int downloadBytes,
   required DateTime recordedAt,
+  Value<int> sessionDuration,
+  Value<int> foregroundUsage,
+  Value<int> wifiConnectionDuration,
   Value<int> rowid,
 });
 typedef $$UsageAnalyticsTableUpdateCompanionBuilder = UsageAnalyticsCompanion
@@ -2441,6 +2578,9 @@ typedef $$UsageAnalyticsTableUpdateCompanionBuilder = UsageAnalyticsCompanion
   Value<int> uploadBytes,
   Value<int> downloadBytes,
   Value<DateTime> recordedAt,
+  Value<int> sessionDuration,
+  Value<int> foregroundUsage,
+  Value<int> wifiConnectionDuration,
   Value<int> rowid,
 });
 
@@ -2467,6 +2607,9 @@ class $$UsageAnalyticsTableTableManager extends RootTableManager<
             Value<int> uploadBytes = const Value.absent(),
             Value<int> downloadBytes = const Value.absent(),
             Value<DateTime> recordedAt = const Value.absent(),
+            Value<int> sessionDuration = const Value.absent(),
+            Value<int> foregroundUsage = const Value.absent(),
+            Value<int> wifiConnectionDuration = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               UsageAnalyticsCompanion(
@@ -2475,6 +2618,9 @@ class $$UsageAnalyticsTableTableManager extends RootTableManager<
             uploadBytes: uploadBytes,
             downloadBytes: downloadBytes,
             recordedAt: recordedAt,
+            sessionDuration: sessionDuration,
+            foregroundUsage: foregroundUsage,
+            wifiConnectionDuration: wifiConnectionDuration,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -2483,6 +2629,9 @@ class $$UsageAnalyticsTableTableManager extends RootTableManager<
             required int uploadBytes,
             required int downloadBytes,
             required DateTime recordedAt,
+            Value<int> sessionDuration = const Value.absent(),
+            Value<int> foregroundUsage = const Value.absent(),
+            Value<int> wifiConnectionDuration = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               UsageAnalyticsCompanion.insert(
@@ -2491,6 +2640,9 @@ class $$UsageAnalyticsTableTableManager extends RootTableManager<
             uploadBytes: uploadBytes,
             downloadBytes: downloadBytes,
             recordedAt: recordedAt,
+            sessionDuration: sessionDuration,
+            foregroundUsage: foregroundUsage,
+            wifiConnectionDuration: wifiConnectionDuration,
             rowid: rowid,
           ),
         ));
@@ -2523,6 +2675,21 @@ class $$UsageAnalyticsTableFilterComposer
       column: $state.table.recordedAt,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get sessionDuration => $state.composableBuilder(
+      column: $state.table.sessionDuration,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get foregroundUsage => $state.composableBuilder(
+      column: $state.table.foregroundUsage,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get wifiConnectionDuration => $state.composableBuilder(
+      column: $state.table.wifiConnectionDuration,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$UsageAnalyticsTableOrderingComposer
@@ -2550,6 +2717,21 @@ class $$UsageAnalyticsTableOrderingComposer
 
   ColumnOrderings<DateTime> get recordedAt => $state.composableBuilder(
       column: $state.table.recordedAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get sessionDuration => $state.composableBuilder(
+      column: $state.table.sessionDuration,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get foregroundUsage => $state.composableBuilder(
+      column: $state.table.foregroundUsage,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get wifiConnectionDuration => $state.composableBuilder(
+      column: $state.table.wifiConnectionDuration,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
