@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/theme/app_colors.dart';
 
 class DashboardBottomNavigation extends StatelessWidget {
@@ -6,10 +7,23 @@ class DashboardBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Basic implementation for now - ideally this would use ShellRoute
+    // to preserve state, but we'll use simple routing for Phase 3.1
+    final String location = GoRouterState.of(context).uri.path;
+    int selectedIndex = 0;
+    if (location.startsWith('/devices')) selectedIndex = 1;
+
     return NavigationBar(
-      selectedIndex: 0,
+      selectedIndex: selectedIndex,
       onDestinationSelected: (index) {
-        // Handle navigation across premium modules
+        switch (index) {
+          case 0:
+            context.go('/');
+            break;
+          case 1:
+            context.go('/devices');
+            break;
+        }
       },
       destinations: const [
         NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Home'),

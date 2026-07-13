@@ -6,6 +6,8 @@ import '../../providers/global_providers.dart';
 import '../connectivity/connectivity_service.dart';
 import '../connectivity/wifi_info_service.dart';
 import '../utils/permission_manager.dart';
+import '../scanner/network_scanner.dart';
+import '../scanner/network_scanner_impl.dart';
 
 part 'network_providers.g.dart';
 
@@ -40,4 +42,9 @@ PermissionManager permissionManager(PermissionManagerRef ref) {
   return PermissionManager(
     ref.watch(loggerServiceProvider),
   );
+}
+
+@Riverpod(keepAlive: true)
+NetworkScanner networkScanner(NetworkScannerRef ref) {
+  return NetworkScannerImpl();
 }

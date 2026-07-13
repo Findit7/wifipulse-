@@ -135,7 +135,10 @@ RouterControlRepository routerControlRepository(RouterControlRepositoryRef ref) 
 
 @Riverpod(keepAlive: true)
 DeviceRepository deviceRepository(DeviceRepositoryRef ref) {
-  return DeviceRepositoryImpl(DeviceLocalDataSourceImpl());
+  return DeviceRepositoryImpl(
+    DeviceLocalDataSourceImpl(),
+    ref.watch(networkScannerProvider),
+  );
 }
 
 @Riverpod(keepAlive: true)

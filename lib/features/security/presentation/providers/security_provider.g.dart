@@ -22,8 +22,6 @@ final runSecurityAuditUseCaseProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef RunSecurityAuditUseCaseRef
     = AutoDisposeProviderRef<RunSecurityAuditUseCase>;
 String _$getActiveAlertsUseCaseHash() =>
@@ -42,8 +40,6 @@ final getActiveAlertsUseCaseProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef GetActiveAlertsUseCaseRef
     = AutoDisposeProviderRef<GetActiveAlertsUseCase>;
 String _$resolveAlertUseCaseHash() =>
@@ -62,8 +58,6 @@ final resolveAlertUseCaseProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef ResolveAlertUseCaseRef = AutoDisposeProviderRef<ResolveAlertUseCase>;
 String _$securityControllerHash() =>
     r'0e5ab467e10401b5962034d53d608c7838a4c03d';
@@ -83,4 +77,4 @@ final securityControllerProvider =
 
 typedef _$SecurityController = AutoDisposeNotifier<SecurityState>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

@@ -22,8 +22,6 @@ final scanNetworkUseCaseProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef ScanNetworkUseCaseRef = AutoDisposeProviderRef<ScanNetworkUseCase>;
 String _$discoveryControllerHash() =>
     r'ba194c5311b9e6901516582e93cc53f1f576e76c';
@@ -43,4 +41,4 @@ final discoveryControllerProvider =
 
 typedef _$DiscoveryController = AutoDisposeNotifier<DiscoveryState>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

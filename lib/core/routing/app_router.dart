@@ -7,6 +7,9 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/onboarding_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/splash/presentation/providers/splash_provider.dart';
+import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/devices/presentation/screens/devices_screen.dart';
+import '../../features/devices/presentation/screens/device_details_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -36,20 +39,18 @@ GoRouter appRouter(AppRouterRef ref) {
       ),
       GoRoute(
         path: '/',
-        builder: (context, state) => Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('WiFiPulse Dashboard'),
-                ElevatedButton(
-                  onPressed: () => ref.read(authControllerProvider.notifier).logout(),
-                  child: const Text('Logout'),
-                )
-              ]
-            )
-          ),
-        ),
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: '/devices',
+        builder: (context, state) => const DevicesScreen(),
+      ),
+      GoRoute(
+        path: '/devices/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return DeviceDetailsScreen(deviceId: id);
+        },
       ),
     ],
     redirect: (context, state) {

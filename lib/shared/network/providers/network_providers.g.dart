@@ -80,5 +80,20 @@ final permissionManagerProvider = Provider<PermissionManager>.internal(
 );
 
 typedef PermissionManagerRef = ProviderRef<PermissionManager>;
+String _$networkScannerHash() => r'd2a636f8bc8e118808c49264290849b92fe60fa2';
+
+/// See also [networkScanner].
+@ProviderFor(networkScanner)
+final networkScannerProvider = Provider<NetworkScanner>.internal(
+  networkScanner,
+  name: r'networkScannerProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$networkScannerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef NetworkScannerRef = ProviderRef<NetworkScanner>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

@@ -22,8 +22,6 @@ final getDailySummaryUseCaseProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef GetDailySummaryUseCaseRef
     = AutoDisposeProviderRef<GetDailySummaryUseCase>;
 String _$usageControllerHash() => r'273c92b11dfeac317c7b8317bd13c39f54209530';
@@ -43,4 +41,4 @@ final usageControllerProvider = AutoDisposeAsyncNotifierProvider<
 
 typedef _$UsageController = AutoDisposeAsyncNotifier<UsageSummaryEntity>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

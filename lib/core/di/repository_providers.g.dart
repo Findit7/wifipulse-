@@ -196,7 +196,7 @@ final routerControlRepositoryProvider =
 );
 
 typedef RouterControlRepositoryRef = ProviderRef<RouterControlRepository>;
-String _$deviceRepositoryHash() => r'a614397625effedbc8265f7e7b6896863316d957';
+String _$deviceRepositoryHash() => r'aed5b179b81f8c8c3546a6a2e76420c06a1d5530';
 
 /// See also [deviceRepository].
 @ProviderFor(deviceRepository)

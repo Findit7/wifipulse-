@@ -6,7 +6,7 @@ part of 'dio_client.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$dioClientHash() => r'3df13bacaae05322ffee378017698f0b4c30d9ac';
+String _$dioClientHash() => r'80c447ae6751640b5351ac046f5afef15df0426c';
 
 /// See also [dioClient].
 @ProviderFor(dioClient)
@@ -19,8 +19,6 @@ final dioClientProvider = AutoDisposeProvider<Dio>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef DioClientRef = AutoDisposeProviderRef<Dio>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

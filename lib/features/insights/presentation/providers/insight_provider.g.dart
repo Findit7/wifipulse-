@@ -22,8 +22,6 @@ final generateInsightUseCaseProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef GenerateInsightUseCaseRef
     = AutoDisposeProviderRef<GenerateInsightUseCase>;
 String _$getInsightFeedUseCaseHash() =>
@@ -42,8 +40,6 @@ final getInsightFeedUseCaseProvider =
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef GetInsightFeedUseCaseRef
     = AutoDisposeProviderRef<GetInsightFeedUseCase>;
 String _$aiFeatureFlagHash() => r'865ca539dfb3adf57f7e1fa092efb16ec2b6744d';
@@ -60,8 +56,6 @@ final aiFeatureFlagProvider = AutoDisposeFutureProvider<bool>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
 typedef AiFeatureFlagRef = AutoDisposeFutureProviderRef<bool>;
 String _$insightControllerHash() => r'd794c3c2cef1b01f4e985ec8ce8df6a71eb96599';
 
@@ -80,4 +74,4 @@ final insightControllerProvider =
 
 typedef _$InsightController = AutoDisposeNotifier<InsightState>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

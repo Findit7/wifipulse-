@@ -50,9 +50,9 @@ class DashboardRepositoryImpl implements DashboardRepository {
         ],
       );
 
-      return Result.success(status);
+      return right(status);
     } catch (e) {
-      return Result.failure(NetworkFailure('Failed to fetch dashboard data: $e'));
+      return left(NetworkFailure('Failed to fetch dashboard data: $e'));
     }
   }
 }

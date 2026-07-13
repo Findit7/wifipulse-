@@ -13,6 +13,7 @@ class DeviceEntity {
   final bool isOnline;
   final DateTime firstSeen;
   final DateTime lastSeen;
+  final int riskScore;
 
   const DeviceEntity({
     required this.id,
@@ -29,5 +30,6 @@ class DeviceEntity {
     required this.isOnline,
     required this.firstSeen,
     required this.lastSeen,
+    this.riskScore = 0,
   });
 }
